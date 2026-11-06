@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "better-auth": "^1.7.18",
+    "jose": "^6.2.15",
     "next": "16.4.5",
     "react": "19.3.0",
     "react-dom": "19.3.0"
