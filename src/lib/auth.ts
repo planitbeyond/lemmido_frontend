@@ -7,6 +7,8 @@ const timestamps = { createdAt: "created_at", updatedAt: "updated_at" };
 
 export const auth = betterAuth({
   database: new Pool({ connectionString: process.env.DATABASE_URL }),
+  // send failed sign-ins back home as /?error=<code> so AuthButton can explain them
+  onAPIError: { errorURL: "/" },
   user: {
     modelName: "users",
     fields: { emailVerified: "email_verified", ...timestamps },
