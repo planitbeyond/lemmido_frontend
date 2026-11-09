@@ -18,21 +18,24 @@ async function signUp() {
     window.location.href = url.toString();
 }
 
+// Lays the controls out in a line so they fit in the top bar
+const row = { display: "flex", alignItems: "center", gap: 8 };
+
 export default function AuthButton() {
     const { data: session, isPending } = authClient.useSession();
     const error = useSearchParams().get("error");
 
-    if (isPending) return <p>Loading…</p>;
+    if (isPending) return <span>Loading…</span>;
 
     if (!session) {
         return (
-            <div>
+            <div style={row}>
                 {error && (
-                    <p role="alert">
+                    <span role="alert" style={{ color: "#b00020" }}>
                         {SESSION_EXPIRED.includes(error)
                             ? "Your session expired. Please sign in again."
                             : "Sign in failed. Please try again."}
-                    </p>
+                    </span>
                 )}
                 <button onClick={() => authClient.signIn.social({ provider: "cognito", callbackURL: "/" })}>
                     Sign in
@@ -43,8 +46,8 @@ export default function AuthButton() {
     }
 
     return (
-        <div>
-            <p>Signed in as {session.user.name} ({session.user.email})</p>
+        <div style={row}>
+            <span>Signed in as {session.user.name} ({session.user.email})</span>
             <button onClick={() => authClient.signOut()}>Sign out</button>
         </div>
     );

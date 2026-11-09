@@ -12,21 +12,46 @@ const links = [
 
 export default function Page(){
     return (
-        <main>
-            <h1>Lemmido</h1>
-            <nav>
+        <>
+            <header
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 16,
+                    padding: "12px 24px",
+                    borderBottom: "1px solid #ddd",
+                }}
+            >
+                <Link href="/" style={{ fontWeight: "bold", fontSize: 20, textDecoration: "none", color: "inherit" }}>
+                    Lemmido
+                </Link>
+                {/* AuthButton reads ?error=, which needs a Suspense boundary */}
+                <Suspense fallback={<span>Loading…</span>}>
+                    <AuthButton/>
+                </Suspense>
+            </header>
+            <nav style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "12px 24px" }}>
                 {links.map((link) => (
-                    <Link key={link.href} href={link.href}>
+                    <Link
+                        key={link.href}
+                        href={link.href}
+                        style={{
+                            padding: "8px 16px",
+                            border: "1px solid #ccc",
+                            borderRadius: 6,
+                            textDecoration: "none",
+                            color: "inherit",
+                        }}
+                    >
                         {link.label}
                     </Link>
                 ))}
             </nav>
-        {/* AuthButton reads ?error=, which needs a Suspense boundary */}
-        <Suspense fallback={<p>Loading…</p>}>
-            <AuthButton/>
-        </Suspense>
-        <LocationSharer/>
-        </main>
-
+            <main style={{ padding: "0 24px" }}>
+                <h1>Lemmido</h1>
+                <LocationSharer/>
+            </main>
+        </>
     );
 }
