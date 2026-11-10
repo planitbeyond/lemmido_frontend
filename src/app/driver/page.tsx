@@ -1,5 +1,5 @@
 import Link from "next/link";
-import RideForm from "./ride-form";
+import RideForm from "../../components/ride-form/ride-form";
 
 export const metadata = { title: "Driver · Lemmido" };
 
