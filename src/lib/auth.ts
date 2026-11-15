@@ -56,3 +56,13 @@ export const auth = betterAuth({
     },
   },
 });
+
+// better-auth logs mismatches itself, but when the schema check throws anything
+// else (bad connection, missing table, introspection failure) it only prints a
+// generic line. Re-run the check and print the real error behind it.
+auth.$context.then((ctx) =>
+  ctx.checkSchema?.()?.catch((error) => {
+    if (error?.code === "SCHEMA_MISMATCH") return; // already logged in full
+    console.error("[Better Auth] schema check failed:", error);
+  }),
+);

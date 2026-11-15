@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { hasEnoughNotice, MIN_NOTICE_HOURS, useEarliestBookingDate } from "../../lib/booking-dates";
 import type { PickedLocation } from "./kerala";
 import PlaceSearch from "./place-search";
 import RideMap from "./ride-map";
@@ -10,6 +11,8 @@ type Ride = {
     to: PickedLocation;
     date: string;
     time: string;
+    // Only asked for on forms that show the hours field
+    serviceHours?: number;
     description: string;
 };
 
@@ -18,15 +21,21 @@ const input = { padding: 8, border: "1px solid #ccc", borderRadius: 6, font: "in
 
 type Field = "from" | "to";
 
+type Props = {
+    // Ask how many hours the helper is needed for (booking `service_hrs`)
+    askServiceHours?: boolean;
+};
+
 // Not saved anywhere yet: there is no rides endpoint on the backend,
 // so submitting only shows back what was entered.
-export default function RideForm() {
+export default function RideForm({ askServiceHours = false }: Props) {
     const [from, setFrom] = useState<PickedLocation | null>(null);
     const [to, setTo] = useState<PickedLocation | null>(null);
     // The field a map click fills
     const [activeField, setActiveField] = useState<Field>("from");
-    const [missing, setMissing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [submitted, setSubmitted] = useState<Ride | null>(null);
+    const minDate = useEarliestBookingDate();
 
     function handleMapPick(location: PickedLocation) {
         if (activeField === "from") {
@@ -42,16 +51,22 @@ export default function RideForm() {
         event.preventDefault();
         // The pickers aren't form inputs, so the browser can't mark them required
         if (!from || !to) {
-            setMissing(true);
+            setError("Pick both a From and a To location.");
             return;
         }
-        setMissing(false);
         const data = new FormData(event.currentTarget);
+        // The date picker only blocks whole days, so check the time too
+        if (!hasEnoughNotice(String(data.get("date")), String(data.get("time")))) {
+            setError(`Rides have to be booked at least ${MIN_NOTICE_HOURS} hours ahead.`);
+            return;
+        }
+        setError(null);
         setSubmitted({
             from,
             to,
             date: String(data.get("date")),
             time: String(data.get("time")),
+            serviceHours: askServiceHours ? Number(data.get("serviceHours")) : undefined,
             description: String(data.get("description")),
         });
     }
@@ -77,19 +92,25 @@ export default function RideForm() {
                     <div style={{ display: "flex", gap: 12 }}>
                         <label style={{ ...field, flex: 1 }}>
                             Date
-                            <input name="date" type="date" required style={input}/>
+                            <input name="date" type="date" min={minDate} required style={input}/>
                         </label>
                         <label style={{ ...field, flex: 1 }}>
                             Time
                             <input name="time" type="time" required style={input}/>
                         </label>
                     </div>
+                    {askServiceHours && (
+                        <label style={field}>
+                            Service hours
+                            <input name="serviceHours" type="number" min={0.5} max={99.5} step={0.5} required placeholder="e.g. 3" style={input}/>
+                        </label>
+                    )}
                     <label style={field}>
                         Description
                         <textarea name="description" rows={4} placeholder="Seats, luggage, stops…" style={input}/>
                     </label>
-                    {missing && (
-                        <p role="alert" style={{ color: "#b00020", margin: 0 }}>Pick both a From and a To location.</p>
+                    {error && (
+                        <p role="alert" style={{ color: "#b00020", margin: 0 }}>{error}</p>
                     )}
                     <button type="submit" style={{ ...input, cursor: "pointer", alignSelf: "flex-start" }}>
                         Submit
@@ -104,7 +125,8 @@ export default function RideForm() {
             </form>
             {submitted && (
                 <p role="status">
-                    Ride from {submitted.from.address} to {submitted.to.address} on {submitted.date} at {submitted.time}.
+                    Ride from {submitted.from.address} to {submitted.to.address} on {submitted.date} at {submitted.time}
+                    {submitted.serviceHours !== undefined && ` for ${submitted.serviceHours} h`}.
                 </p>
             )}
         </>
