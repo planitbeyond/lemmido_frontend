@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DayPicker, type DateRange, type Matcher } from "react-day-picker";
 import "react-day-picker/style.css";
 import { parseDateInputValue, toDateInputValue, useEarliestBookingDate } from "../lib/booking-dates";
 
 type Props = {
     label: string;
-    // YYYY-MM-DD days that already have MAX_BOOKING_PER_DAY bookings
-    fullDates?: string[];
 } & (
     // One day, submitted under `name` as YYYY-MM-DD
     | { mode?: "single"; name: string }
@@ -39,24 +37,46 @@ function HiddenField({ name, value, error }: { name: string; value: string; erro
     );
 }
 
+// YYYY-MM-DD days from `from` to `to` that are fully booked, from the backend API
+// (lemmido_backend/apps/api). Empty until loaded, or if loading fails.
+function useFullDates(from: string | undefined, to: string | undefined) {
+    const [fullDates, setFullDates] = useState<string[]>([]);
+
+    useEffect(() => {
+        if (!from || !to) return;
+        const controller = new AbortController();
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings/full-dates?from=${from}&to=${to}`, { signal: controller.signal })
+            .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+            .then((data: { fullDates: string[] }) => setFullDates(data.fullDates))
+            .catch((error) => {
+                if (error.name !== "AbortError") console.error("Couldn't load the fully booked dates:", error);
+            });
+        return () => controller.abort();
+    }, [from, to]);
+
+    return fullDates;
+}
+
 // Days inside the notice period and fully booked days can't be picked,
 // and a range can't run across them.
 export default function BookingDatePicker(props: Props) {
-    const { label, fullDates = [] } = props;
+    const { label } = props;
     const earliest = useEarliestBookingDate();
+    const firstDay = earliest ? parseDateInputValue(earliest) : undefined;
+    const lastMonth = firstDay && new Date(firstDay.getFullYear(), firstDay.getMonth() + MONTHS_AHEAD, 1);
+    const lastDay = lastMonth && new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0);
+    const fullDates = useFullDates(earliest, lastDay && toDateInputValue(lastDay));
     const [day, setDay] = useState<Date | undefined>();
     const [range, setRange] = useState<DateRange | undefined>();
 
     // Today depends on the user's clock, so the calendar only renders in the browser
-    if (!earliest) {
+    if (!firstDay || !lastMonth || !lastDay) {
         return <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>{label}</div>;
     }
 
-    const firstDay = parseDateInputValue(earliest);
-    const lastMonth = new Date(firstDay.getFullYear(), firstDay.getMonth() + MONTHS_AHEAD, 1);
     const disabled: Matcher[] = [
         { before: firstDay },
-        { after: new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0) },
+        { after: lastDay },
         ...fullDates.map(parseDateInputValue),
     ];
     const calendar = {
