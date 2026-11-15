@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useEarliestBookingDate } from "../../lib/booking-dates";
-import BookingForm, { field, input, NotesField, PeopleField, row } from "./booking-form";
+import BookingDatePicker from "../booking-date-picker";
+import BookingForm, { field, input, NotesField, PeopleField } from "./booking-form";
 import OfferPicker, { type Offer } from "./offer-picker";
 
 type Category = "tour_packages" | "custom_tours" | "staycations";
@@ -49,39 +49,23 @@ function HomeIcon() {
 }
 
 function PackageFields() {
-    const minDate = useEarliestBookingDate();
     return (
         <>
-            <div style={row}>
-                <label style={{ ...field, flex: 1 }}>
-                    Start date
-                    <input name="startDate" type="date" min={minDate} required style={input}/>
-                </label>
-                <div style={{ flex: 1 }}><PeopleField/></div>
-            </div>
+            <BookingDatePicker name="date" label="Start date"/>
+            <PeopleField/>
             <NotesField placeholder="Pickup point, food preferences…"/>
         </>
     );
 }
 
 function CustomTourFields() {
-    const minDate = useEarliestBookingDate();
     return (
         <>
             <label style={field}>
                 Places to visit
                 <textarea name="places" rows={3} required placeholder="List the places, in any order" style={input}/>
             </label>
-            <div style={row}>
-                <label style={{ ...field, flex: 1 }}>
-                    Start date
-                    <input name="startDate" type="date" min={minDate} required style={input}/>
-                </label>
-                <label style={{ ...field, flex: 1 }}>
-                    End date
-                    <input name="endDate" type="date" min={minDate} required style={input}/>
-                </label>
-            </div>
+            <BookingDatePicker name="date" label="Date"/>
             <PeopleField/>
             <NotesField placeholder="Pace, interests, must-sees…"/>
         </>
@@ -89,19 +73,9 @@ function CustomTourFields() {
 }
 
 function StaycationFields() {
-    const minDate = useEarliestBookingDate();
     return (
         <>
-            <div style={row}>
-                <label style={{ ...field, flex: 1 }}>
-                    Check-in
-                    <input name="checkIn" type="date" min={minDate} required style={input}/>
-                </label>
-                <label style={{ ...field, flex: 1 }}>
-                    Check-out
-                    <input name="checkOut" type="date" min={minDate} required style={input}/>
-                </label>
-            </div>
+            <BookingDatePicker mode="range" startName="checkIn" endName="checkOut" label="Check-in → Check-out"/>
             <PeopleField/>
             <NotesField placeholder="Room type, activities…"/>
         </>

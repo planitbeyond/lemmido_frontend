@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { hasEnoughNotice, MIN_NOTICE_HOURS, useEarliestBookingDate } from "../../lib/booking-dates";
+import { hasEnoughNotice, MIN_NOTICE_HOURS } from "../../lib/booking-dates";
+import BookingDatePicker from "../booking-date-picker";
 import type { PickedLocation } from "./kerala";
 import PlaceSearch from "./place-search";
 import RideMap from "./ride-map";
@@ -35,7 +36,6 @@ export default function RideForm({ askServiceHours = false }: Props) {
     const [activeField, setActiveField] = useState<Field>("from");
     const [error, setError] = useState<string | null>(null);
     const [submitted, setSubmitted] = useState<Ride | null>(null);
-    const minDate = useEarliestBookingDate();
 
     function handleMapPick(location: PickedLocation) {
         if (activeField === "from") {
@@ -89,16 +89,11 @@ export default function RideForm({ askServiceHours = false }: Props) {
                         active={activeField === "to"}
                         onFocus={() => setActiveField("to")}
                     />
-                    <div style={{ display: "flex", gap: 12 }}>
-                        <label style={{ ...field, flex: 1 }}>
-                            Date
-                            <input name="date" type="date" min={minDate} required style={input}/>
-                        </label>
-                        <label style={{ ...field, flex: 1 }}>
-                            Time
-                            <input name="time" type="time" required style={input}/>
-                        </label>
-                    </div>
+                    <BookingDatePicker name="date" label="Date"/>
+                    <label style={field}>
+                        Time
+                        <input name="time" type="time" required style={input}/>
+                    </label>
                     {askServiceHours && (
                         <label style={field}>
                             Service hours
