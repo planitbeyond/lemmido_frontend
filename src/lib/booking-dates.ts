@@ -19,12 +19,6 @@ export function earliestBookingDate() {
     return toDateInputValue(new Date(Date.now() + MIN_NOTICE_HOURS * 60 * 60 * 1000));
 }
 
-// True when a date (and optional HH:MM time) is at least MIN_NOTICE_HOURS away
-export function hasEnoughNotice(date: string, time = "00:00") {
-    const start = new Date(`${date}T${time}`);
-    return start.getTime() - Date.now() >= MIN_NOTICE_HOURS * 60 * 60 * 1000;
-}
-
 const noSubscribe = () => () => {};
 
 // The first day booking calendars allow. Undefined during server rendering, since

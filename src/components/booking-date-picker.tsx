@@ -9,7 +9,15 @@ type Props = {
     label: string;
 } & (
     // One day, submitted under `name` as YYYY-MM-DD
-    | { mode?: "single"; name: string }
+    | {
+          mode?: "single";
+          name: string;
+          // Task length (service + travel) in minutes. When set, days with no free helper
+          // for a task this long can't be picked either
+          taskMinutes?: number;
+          // Called with the picked day as YYYY-MM-DD, or undefined when cleared
+          onChange?: (day: string | undefined) => void;
+      }
     // A stay of one night or more, submitted as `startName` and `endName`
     | { mode: "range"; startName: string; endName: string }
 );
@@ -40,32 +48,51 @@ function HiddenField({ name, value, error }: { name: string; value: string; erro
 // YYYY-MM-DD days from `from` to `to` that are fully booked, from the backend API
 // (lemmido_backend/apps/api). Empty until loaded, or if loading fails.
 function useFullDates(from: string | undefined, to: string | undefined) {
-    const [fullDates, setFullDates] = useState<string[]>([]);
-
-    useEffect(() => {
-        if (!from || !to) return;
-        const controller = new AbortController();
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings/full-dates?from=${from}&to=${to}`, { signal: controller.signal })
-            .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
-            .then((data: { fullDates: string[] }) => setFullDates(data.fullDates))
-            .catch((error) => {
-                if (error.name !== "AbortError") console.error("Couldn't load the fully booked dates:", error);
-            });
-        return () => controller.abort();
-    }, [from, to]);
-
-    return fullDates;
+    return useDateList(from && to ? `/bookings/full-dates?from=${from}&to=${to}` : undefined, "fullDates", "fully booked dates");
 }
 
-// Days inside the notice period and fully booked days can't be picked,
-// and a range can't run across them.
+// YYYY-MM-DD days from `from` to `to` with no start time when any helper is free
+// for a task of `taskMinutes`. Empty without a task length, until loaded, or if loading fails.
+function useUnavailableDates(from: string | undefined, to: string | undefined, taskMinutes: number | undefined) {
+    return useDateList(
+        from && to && taskMinutes ? `/bookings/unavailable-dates?from=${from}&to=${to}&taskMinutes=${taskMinutes}` : undefined,
+        "unavailableDates",
+        "dates with no free helper",
+    );
+}
+
+// A list of YYYY-MM-DD days from the backend API at `path`, under `key` in the response
+function useDateList(path: string | undefined, key: string, what: string) {
+    const [loaded, setLoaded] = useState<{ path: string; dates: string[] } | null>(null);
+
+    useEffect(() => {
+        if (!path) return;
+        const controller = new AbortController();
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, { signal: controller.signal })
+            .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+            .then((data: Record<string, string[]>) => setLoaded({ path, dates: data[key] ?? [] }))
+            .catch((error) => {
+                if (error.name !== "AbortError") console.error(`Couldn't load the ${what}:`, error);
+            });
+        return () => controller.abort();
+    }, [path, key, what]);
+
+    // A list loaded for an earlier path (e.g. a different task length) doesn't apply any more
+    return path && loaded?.path === path ? loaded.dates : [];
+}
+
+// Days inside the notice period, fully booked days and (with a task length) days
+// with no free helper can't be picked, and a range can't run across them.
 export default function BookingDatePicker(props: Props) {
     const { label } = props;
     const earliest = useEarliestBookingDate();
     const firstDay = earliest ? parseDateInputValue(earliest) : undefined;
     const lastMonth = firstDay && new Date(firstDay.getFullYear(), firstDay.getMonth() + MONTHS_AHEAD, 1);
     const lastDay = lastMonth && new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0);
-    const fullDates = useFullDates(earliest, lastDay && toDateInputValue(lastDay));
+    const lastDayValue = lastDay && toDateInputValue(lastDay);
+    const fullDates = useFullDates(earliest, lastDayValue);
+    const taskMinutes = props.mode === "range" ? undefined : props.taskMinutes;
+    const unavailableDates = useUnavailableDates(earliest, lastDayValue, taskMinutes);
     const [day, setDay] = useState<Date | undefined>();
     const [range, setRange] = useState<DateRange | undefined>();
 
@@ -78,6 +105,7 @@ export default function BookingDatePicker(props: Props) {
         { before: firstDay },
         { after: lastDay },
         ...fullDates.map(parseDateInputValue),
+        ...unavailableDates.map(parseDateInputValue),
     ];
     const calendar = {
         defaultMonth: firstDay,
@@ -116,13 +144,17 @@ export default function BookingDatePicker(props: Props) {
             </>
         );
     } else {
+        const { onChange } = props;
         picker = (
             <>
                 <DayPicker
                     {...calendar}
                     mode="single"
                     selected={day}
-                    onSelect={setDay}
+                    onSelect={(picked) => {
+                        setDay(picked);
+                        onChange?.(picked && toDateInputValue(picked));
+                    }}
                     footer={day ? `Selected: ${day.toDateString()}` : "Pick a day."}
                 />
                 <HiddenField name={props.name} value={day ? toDateInputValue(day) : ""} error={day ? "" : "Pick a day on the calendar."}/>

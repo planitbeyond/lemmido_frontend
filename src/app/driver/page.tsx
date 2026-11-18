@@ -7,7 +7,7 @@ export default function DriverPage() {
     return (
         <main style={{ padding: "0 24px" }}>
             <h1>Driver</h1>
-            <RideForm/>
+            <RideForm kind="driver"/>
             <p>
                 <Link href="/">← Back home</Link>
             </p>
