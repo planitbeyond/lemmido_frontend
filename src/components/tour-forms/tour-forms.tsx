@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BookingDatePicker from "../booking-date-picker";
 import BookingForm, { field, input, NotesField, PeopleField } from "./booking-form";
 import OfferPicker, { type Offer } from "./offer-picker";
@@ -13,15 +13,45 @@ const categories: { id: Category; title: string; description: string }[] = [
     { id: "staycations", title: "Staycations", description: "Short, relaxed stays close to home." },
 ];
 
-// Placeholder offers until there is a real catalog on the backend
-const packages: Offer[] = [
-    { id: "munnar", title: "Munnar Tea Hills", description: "Tea estates, misty viewpoints and Eravikulam park.", detail: "3 days · 2 nights" },
-    { id: "alleppey", title: "Alleppey Backwaters", description: "A night on a houseboat through the canals.", detail: "2 days · 1 night" },
-    { id: "fort_kochi", title: "Fort Kochi Heritage", description: "Chinese nets, Jew Town and the old Dutch quarter.", detail: "1 day" },
-    { id: "wayanad", title: "Wayanad Wildlife", description: "Forest drives, waterfalls and Edakkal caves.", detail: "3 days · 2 nights" },
-    { id: "varkala", title: "Varkala Cliffs", description: "Cliff-top walks and quiet beaches.", detail: "2 days · 1 night" },
-    { id: "thekkady", title: "Thekkady Spice Trail", description: "Spice gardens and a boat ride on Periyar lake.", detail: "2 days · 1 night" },
-];
+// A tour package from GET /tour-packages (backend: packages/db/config/tour-packages.json)
+type TourPackage = {
+    id: string;
+    title: string;
+    summary: string;
+    days: number;
+    nights: number;
+    // Paise; null if the package has no price yet
+    pricePerPerson: number | null;
+};
+
+const rupees = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+
+function toOffer(p: TourPackage): Offer {
+    const duration = [`${p.days} ${p.days === 1 ? "day" : "days"}`];
+    if (p.nights > 0) duration.push(`${p.nights} ${p.nights === 1 ? "night" : "nights"}`);
+    if (p.pricePerPerson !== null) duration.push(`${rupees.format(p.pricePerPerson / 100)} per person`);
+    return { id: p.id, title: p.title, description: p.summary, detail: duration.join(" · ") };
+}
+
+// The tour packages as offers: null while loading, "error" if loading failed
+function useTourPackages() {
+    const [offers, setOffers] = useState<Offer[] | "error" | null>(null);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/tour-packages`, { signal: controller.signal })
+            .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+            .then((data: { packages: TourPackage[] }) => setOffers(data.packages.map(toOffer)))
+            .catch((error) => {
+                if (error.name === "AbortError") return;
+                console.error("Couldn't load the tour packages:", error);
+                setOffers("error");
+            });
+        return () => controller.abort();
+    }, []);
+
+    return offers;
+}
 
 const staycations: Offer[] = [
     { id: "kumarakom", title: "Lakeside Retreat", description: "A calm stay on Vembanad lake with sunset canoe rides.", detail: "Kumarakom" },
@@ -82,6 +112,24 @@ function StaycationFields() {
     );
 }
 
+function TourPackages() {
+    const offers = useTourPackages();
+
+    if (offers === null) return <p style={{ margin: 0, color: "#555" }}>Loading packages…</p>;
+    if (offers === "error") return <p role="alert" style={{ margin: 0, color: "#b00020" }}>Couldn&apos;t load the packages. Please try again later.</p>;
+    if (offers.length === 0) return <p style={{ margin: 0, color: "#555" }}>No packages are available right now.</p>;
+
+    return (
+        <OfferPicker
+            offers={offers}
+            icon={<MapIcon/>}
+            bookLabel="Book this package"
+            backLabel="All packages"
+            fields={<PackageFields/>}
+        />
+    );
+}
+
 export default function TourForms() {
     const [active, setActive] = useState<Category | null>(null);
     const category = categories.find((c) => c.id === active);
@@ -111,16 +159,7 @@ export default function TourForms() {
             {!category && <p style={{ margin: 0, color: "#555" }}>Choose a tour type to see its form.</p>}
 
             {/* key resets each section when switching categories */}
-            {category?.id === "tour_packages" && (
-                <OfferPicker
-                    key={category.id}
-                    offers={packages}
-                    icon={<MapIcon/>}
-                    bookLabel="Book this package"
-                    backLabel="All packages"
-                    fields={<PackageFields/>}
-                />
-            )}
+            {category?.id === "tour_packages" && <TourPackages key={category.id}/>}
             {category?.id === "custom_tours" && (
                 <BookingForm key={category.id} title={category.title} description={category.description}>
                     <CustomTourFields/>
