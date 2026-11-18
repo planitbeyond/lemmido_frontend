@@ -10,6 +10,8 @@ type Props = {
     date: string | undefined;
     // Task length (service + travel) in minutes, or undefined until it's known
     taskMinutes: number | undefined;
+    // What to show while there's no task length, e.g. what to fill in first
+    taskHint?: string;
 };
 
 const field = { display: "flex", flexDirection: "column", gap: 4 } as const;
@@ -19,7 +21,7 @@ type Loaded = { key: string; times: string[] } | { key: string; error: true };
 
 // Start times on the :00/:30 grid when at least one helper is free for the whole
 // task, from the backend API. Showing a time doesn't hold a helper: submit checks again.
-export default function BookingTimeSelect({ label, name, date, taskMinutes }: Props) {
+export default function BookingTimeSelect({ label, name, date, taskMinutes, taskHint = "Enter the service hours first." }: Props) {
     const key = date && taskMinutes ? `date=${date}&taskMinutes=${taskMinutes}` : undefined;
     const [loaded, setLoaded] = useState<Loaded | null>(null);
 
@@ -43,7 +45,7 @@ export default function BookingTimeSelect({ label, name, date, taskMinutes }: Pr
 
     let hint: string | null = null;
     if (!date) hint = "Pick a day first.";
-    else if (!taskMinutes) hint = "Enter the service hours first.";
+    else if (!taskMinutes) hint = taskHint;
     else if (!current) hint = "Loading free times…";
     else if ("error" in current) hint = "Couldn't load the free times. Please try again.";
     else if (times.length === 0) hint = "No helper is free that day for this long. Please pick another day.";
