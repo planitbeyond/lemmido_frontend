@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { authClient } from "../../lib/auth-client";
 import { User } from "./icons";
@@ -88,14 +89,17 @@ export default function AccountMenu() {
                 <div id={menuId} role="menu" className={styles.accountMenu}>
                     {session ? (
                         <>
-                            <div className={styles.profile}>
+                            <Link href="/dashboard" role="menuitem" className={styles.profile} onClick={() => setOpen(false)}>
                                 <span className={styles.profileAvatar}>{user?.name ? initials(user.name) : <User size={18}/>}</span>
                                 <div>
                                     <strong>{name}</strong>
                                     {user?.email && <span>{user.email}</span>}
                                     {user?.phoneNumber && <span>{user.phoneNumber}</span>}
                                 </div>
-                            </div>
+                            </Link>
+                            <Link href="/dashboard" role="menuitem" className={styles.menuItem} onClick={() => setOpen(false)}>
+                                My dashboard
+                            </Link>
                             <button
                                 type="button"
                                 role="menuitem"
