@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { authClient } from "../../lib/auth-client";
 import { MIN_NOTICE_HOURS, parseDateInputValue, toDateInputValue } from "../../lib/booking-dates";
 import BookingDatePicker from "../booking-date-picker";
 import BookingTimeSelect from "../booking-time-select";
@@ -92,6 +93,24 @@ const EXTRAS = [
     { value: "childSeat", label: "Child Seat" },
     { value: "wheelchair", label: "Wheelchair Support" },
 ];
+
+type Details = { name: string; phoneCode: string; phone: string };
+
+const EMPTY_DETAILS: Details = { name: "", phoneCode: "+91", phone: "" };
+
+// The signed-in customer's own details, for a booking for themselves. The phone is
+// E.164 from Cognito (+919876543210), split into one of our country codes and the rest.
+function accountDetails(user: { name?: string | null; phoneNumber?: string | null } | undefined): Details {
+    if (!user) return EMPTY_DETAILS;
+    const phoneNumber = user.phoneNumber ?? "";
+    // Longest first, so +971 isn't read as +97 or +9
+    const code = [...COUNTRY_CODES].sort((a, b) => b.length - a.length).find((c) => phoneNumber.startsWith(c));
+    return {
+        name: user.name ?? "",
+        phoneCode: code ?? EMPTY_DETAILS.phoneCode,
+        phone: code ? phoneNumber.slice(code.length) : "",
+    };
+}
 
 // 0.5 h steps up to the 9 h a task may last
 function hourOptions(min: number) {
@@ -210,6 +229,26 @@ export default function RideForm({ kind }: Props) {
     const stepRefs = useRef<(HTMLFieldSetElement | null)[]>([]);
     const [step, setStep] = useState(0);
     const [whoFor, setWhoFor] = useState<WhoFor>("self");
+    // Prefilled from the login when booking for yourself; still editable
+    const { data: session } = authClient.useSession();
+    const account = accountDetails(session?.user as { name?: string | null; phoneNumber?: string | null } | undefined);
+    const [details, setDetails] = useState<Details>(EMPTY_DETAILS);
+    // The session loads after the first render: fill the details once it arrives
+    const [filledFromAccount, setFilledFromAccount] = useState(false);
+    if (session && !filledFromAccount) {
+        setFilledFromAccount(true);
+        if (whoFor === "self" && !details.name && !details.phone) setDetails(account);
+    }
+
+    function pickWhoFor(value: WhoFor) {
+        setWhoFor(value);
+        if (value === "self") {
+            setDetails(account);
+        } else if (details.name === account.name && details.phone === account.phone) {
+            // Someone else's booking: don't keep your own details in their fields
+            setDetails(EMPTY_DETAILS);
+        }
+    }
     const [from, setFrom] = useState<PickedLocation | null>(null);
     const [to, setTo] = useState<PickedLocation | null>(null);
     // The field a map click fills
@@ -404,7 +443,7 @@ export default function RideForm({ kind }: Props) {
                                                 name="whoFor"
                                                 value={option.value}
                                                 checked={whoFor === option.value}
-                                                onChange={() => setWhoFor(option.value)}
+                                                onChange={() => pickWhoFor(option.value)}
                                                 className={styles.srOnly}
                                             />
                                             <span className={styles.maskIcon} style={{ "--icon": `url(${option.icon})` } as React.CSSProperties}/>
@@ -416,7 +455,15 @@ export default function RideForm({ kind }: Props) {
                                 <div className={styles.fieldRow}>
                                     <label className={styles.field}>
                                         <span>Name<span className={styles.req}>*</span></span>
-                                        <input name="name" required autoComplete={whoFor === "self" ? "name" : "off"} placeholder="Full name" className={styles.input}/>
+                                        <input
+                                            name="name"
+                                            required
+                                            autoComplete={whoFor === "self" ? "name" : "off"}
+                                            placeholder="Full name"
+                                            value={details.name}
+                                            onChange={(event) => setDetails({ ...details, name: event.target.value })}
+                                            className={styles.input}
+                                        />
                                     </label>
                                     <fieldset className={styles.radioGroup} style={{ flex: "0 0 auto" }}>
                                         <legend>Gender:</legend>
@@ -433,12 +480,20 @@ export default function RideForm({ kind }: Props) {
                                 <div className={styles.field}>
                                     <span id="phone-label">Phone number<span className={styles.req}>*</span></span>
                                     <div className={styles.phone} role="group" aria-labelledby="phone-label">
-                                        <select name="phoneCode" aria-label="Country code" defaultValue="+91" className={styles.select}>
+                                        <select
+                                            name="phoneCode"
+                                            aria-label="Country code"
+                                            value={details.phoneCode}
+                                            onChange={(event) => setDetails({ ...details, phoneCode: event.target.value })}
+                                            className={styles.select}
+                                        >
                                             {COUNTRY_CODES.map((code) => <option key={code} value={code}>{code}</option>)}
                                         </select>
                                         <input
                                             name="phone"
                                             type="tel"
+                                            value={details.phone}
+                                            onChange={(event) => setDetails({ ...details, phone: event.target.value })}
                                             required
                                             inputMode="tel"
                                             autoComplete={whoFor === "self" ? "tel-national" : "off"}

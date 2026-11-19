@@ -3,8 +3,8 @@
 import { Suspense, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import AuthButton from "../../app/auth-button";
-import { Mail, Phone, Search, User, WhatsApp, socials } from "./icons";
+import AccountMenu from "./account-menu";
+import { Phone, Search, WhatsApp, socials } from "./icons";
 import styles from "./landing.module.css";
 
 // TODO: the placeholder number from the top bar; swap in Lemmido's WhatsApp number
@@ -27,16 +27,12 @@ export default function SiteHeader() {
                 <div className={`${styles.container} ${styles.topBarInner}`}>
                     <div className={styles.topBarContacts}>
                         <a href="tel:+11234567890"><Phone size={13}/> +1 1234567890</a>
-                        <a href="mailto:example@gmail.com"><Mail size={15}/> example@gmail.com</a>
                     </div>
                     <div className={styles.topBarRight}>
-                        <span className={styles.userIcon}><User size={14}/></span>
-                        {/* AuthButton reads ?error=, which needs a Suspense boundary */}
-                        <div className={styles.auth}>
-                            <Suspense fallback={<span>Loading…</span>}>
-                                <AuthButton/>
-                            </Suspense>
-                        </div>
+                        {/* AccountMenu reads ?error=, which needs a Suspense boundary */}
+                        <Suspense fallback={<span>Loading…</span>}>
+                            <AccountMenu/>
+                        </Suspense>
                         <span className={styles.topBarDivider}/>
                         <div className={styles.socials}>
                             {socials.map(({ href, label, Icon }) => (

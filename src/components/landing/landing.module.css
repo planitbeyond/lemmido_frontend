@@ -199,13 +199,18 @@
     color: #000;
 }
 
-/* Restyles the shared AuthButton for the dark bar */
-.auth {
+/* Account button and its dropdown, in the black top bar */
+.account {
+    position: relative;
     display: flex;
     align-items: center;
+    gap: 10px;
 }
 
-.auth button {
+.accountButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     padding: 0;
     border: 0;
     background: none;
@@ -214,18 +219,112 @@
     cursor: pointer;
 }
 
-.auth button + button::before {
-    content: "/";
-    margin-right: 8px;
+.accountButton:hover {
+    color: #ffb3c0;
 }
 
-.auth button:hover {
+.chevronUp {
+    transform: rotate(180deg);
+}
+
+.initials {
+    font-size: 9px;
+    font-weight: 700;
+    color: #000;
+}
+
+.accountError {
+    color: #ff8a9b;
+}
+
+.accountMenu {
+    position: absolute;
+    z-index: 50;
+    top: calc(100% + 10px);
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    width: 260px;
+    padding: 8px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+    color: var(--ink);
+    font-size: 13px;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 8px 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+}
+
+.profile div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.profile strong {
+    font-size: 14px;
+}
+
+.profile span {
+    overflow: hidden;
+    color: var(--muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profileAvatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--pink);
     color: var(--red);
+    font-size: 14px;
+    font-weight: 700;
 }
 
-/* Beats AuthButton's inline dark red, which is unreadable on black */
-.auth [role="alert"] {
-    color: #ff8a9b !important;
+.menuHint {
+    margin: 4px 8px 8px;
+    color: var(--muted);
+}
+
+.menuItem {
+    padding: 9px 8px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+}
+
+.menuItem:hover,
+.menuItem:focus-visible {
+    background: #f4f4f4;
+    outline: none;
+}
+
+.menuPrimary {
+    background: var(--red);
+    color: #fff;
+    text-align: center;
+}
+
+.menuPrimary:hover,
+.menuPrimary:focus-visible {
+    background: var(--red-dark);
 }
 
 .topBarDivider {
