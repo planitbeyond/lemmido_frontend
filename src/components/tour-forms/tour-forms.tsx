@@ -24,40 +24,57 @@ type TourPackage = {
     pricePerPerson: number | null;
 };
 
+// A staycation from GET /staycations (backend: packages/db/config/staycations.json)
+type Staycation = {
+    id: string;
+    title: string;
+    summary: string;
+    location: string;
+    minNights: number;
+    // Paise; null if the staycation has no price yet
+    pricePerNight: number | null;
+};
+
 const rupees = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
-function toOffer(p: TourPackage): Offer {
-    const duration = [`${p.days} ${p.days === 1 ? "day" : "days"}`];
-    if (p.nights > 0) duration.push(`${p.nights} ${p.nights === 1 ? "night" : "nights"}`);
-    if (p.pricePerPerson !== null) duration.push(`${rupees.format(p.pricePerPerson / 100)} per person`);
-    return { id: p.id, title: p.title, description: p.summary, detail: duration.join(" · ") };
+function plural(count: number, word: string) {
+    return `${count} ${word}${count === 1 ? "" : "s"}`;
 }
 
-// The tour packages as offers: null while loading, "error" if loading failed
-function useTourPackages() {
+function packageOffer(p: TourPackage): Offer {
+    const detail = [plural(p.days, "day")];
+    if (p.nights > 0) detail.push(plural(p.nights, "night"));
+    if (p.pricePerPerson !== null) detail.push(`${rupees.format(p.pricePerPerson / 100)} per person`);
+    return { id: p.id, title: p.title, description: p.summary, detail: detail.join(" · ") };
+}
+
+function staycationOffer(s: Staycation): Offer {
+    const detail = [s.location];
+    if (s.pricePerNight !== null) detail.push(`${rupees.format(s.pricePerNight / 100)} per night`);
+    if (s.minNights > 1) detail.push(`min ${plural(s.minNights, "night")}`);
+    return { id: s.id, title: s.title, description: s.summary, detail: detail.join(" · ") };
+}
+
+// The list under `key` from the backend API at `path`, as offers:
+// null while loading, "error" if loading failed
+function useOffers<T>(path: string, key: string, toOffer: (item: T) => Offer) {
     const [offers, setOffers] = useState<Offer[] | "error" | null>(null);
 
     useEffect(() => {
         const controller = new AbortController();
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/tour-packages`, { signal: controller.signal })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, { signal: controller.signal })
             .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
-            .then((data: { packages: TourPackage[] }) => setOffers(data.packages.map(toOffer)))
+            .then((data: Record<string, T[]>) => setOffers((data[key] ?? []).map(toOffer)))
             .catch((error) => {
                 if (error.name === "AbortError") return;
-                console.error("Couldn't load the tour packages:", error);
+                console.error(`Couldn't load ${path}:`, error);
                 setOffers("error");
             });
         return () => controller.abort();
-    }, []);
+    }, [path, key, toOffer]);
 
     return offers;
 }
-
-const staycations: Offer[] = [
-    { id: "kumarakom", title: "Lakeside Retreat", description: "A calm stay on Vembanad lake with sunset canoe rides.", detail: "Kumarakom" },
-    { id: "vagamon", title: "Hill Cottage", description: "Pine forests, meadows and cool mountain air.", detail: "Vagamon" },
-    { id: "marari", title: "Beach Villa", description: "A quiet fishing-village beach, away from the crowds.", detail: "Marari" },
-];
 
 function MapIcon() {
     return (
@@ -112,20 +129,43 @@ function StaycationFields() {
     );
 }
 
+type OfferListProps = Omit<React.ComponentProps<typeof OfferPicker>, "offers"> & {
+    offers: Offer[] | "error" | null;
+    // Plural name used in the loading and error messages, e.g. "packages"
+    what: string;
+};
+
+function OfferList({ offers, what, ...picker }: OfferListProps) {
+    if (offers === null) return <p style={{ margin: 0, color: "#555" }}>Loading {what}…</p>;
+    if (offers === "error") return <p role="alert" style={{ margin: 0, color: "#b00020" }}>Couldn&apos;t load the {what}. Please try again later.</p>;
+    if (offers.length === 0) return <p style={{ margin: 0, color: "#555" }}>No {what} are available right now.</p>;
+    return <OfferPicker offers={offers} {...picker}/>;
+}
+
 function TourPackages() {
-    const offers = useTourPackages();
-
-    if (offers === null) return <p style={{ margin: 0, color: "#555" }}>Loading packages…</p>;
-    if (offers === "error") return <p role="alert" style={{ margin: 0, color: "#b00020" }}>Couldn&apos;t load the packages. Please try again later.</p>;
-    if (offers.length === 0) return <p style={{ margin: 0, color: "#555" }}>No packages are available right now.</p>;
-
+    const offers = useOffers("/tour-packages", "packages", packageOffer);
     return (
-        <OfferPicker
+        <OfferList
             offers={offers}
+            what="packages"
             icon={<MapIcon/>}
             bookLabel="Book this package"
             backLabel="All packages"
             fields={<PackageFields/>}
+        />
+    );
+}
+
+function Staycations() {
+    const offers = useOffers("/staycations", "staycations", staycationOffer);
+    return (
+        <OfferList
+            offers={offers}
+            what="staycations"
+            icon={<HomeIcon/>}
+            bookLabel="Book this stay"
+            backLabel="All staycations"
+            fields={<StaycationFields/>}
         />
     );
 }
@@ -165,16 +205,7 @@ export default function TourForms() {
                     <CustomTourFields/>
                 </BookingForm>
             )}
-            {category?.id === "staycations" && (
-                <OfferPicker
-                    key={category.id}
-                    offers={staycations}
-                    icon={<HomeIcon/>}
-                    bookLabel="Book this stay"
-                    backLabel="All staycations"
-                    fields={<StaycationFields/>}
-                />
-            )}
+            {category?.id === "staycations" && <Staycations key={category.id}/>}
         </div>
     );
 }
