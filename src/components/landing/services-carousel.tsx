@@ -9,7 +9,7 @@ import styles from "./landing.module.css";
 const services = [
     {
         href: "/companion",
-        title: "Hospital visit",
+        title: "Companion",
         text: "We take you there, stay by your side, and bring you home.",
         price: 15,
         image: "/landing/service-companion.jpg",
@@ -26,7 +26,7 @@ const services = [
         title: "Driver",
         text: "A careful driver, in your car or ours.",
         price: 28,
-        image: "/landing/service-driver.jpg",
+        image: "/landing/driver-istock.jpg",
     },
 ];
 

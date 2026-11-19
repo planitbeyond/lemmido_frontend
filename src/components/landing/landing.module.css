@@ -357,6 +357,16 @@
     font-weight: 700;
 }
 
+.whatsappButton {
+    background: var(--ink);
+    color: #fff;
+    transition: background 0.2s;
+}
+
+.whatsappButton:hover {
+    background: #333;
+}
+
 /* Hero */
 
 .hero {
@@ -1321,4 +1331,25 @@
     .copyright {
         padding: 14px 20px;
     }
+}
+
+/* "[logo] means let me do it", with the wordmark sitting on the text line */
+.meaning {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.meaning img {
+    width: 88px;
+    height: auto;
+    margin-bottom: 3px;
+}
+
+/* Same colour and weight as the headlines */
+.ink {
+    color: var(--ink);
+    font-weight: 700;
 }

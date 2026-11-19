@@ -4,14 +4,18 @@ import { Suspense, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AuthButton from "../../app/auth-button";
-import { Mail, Phone, Search, User, socials } from "./icons";
+import { Mail, Phone, Search, User, WhatsApp, socials } from "./icons";
 import styles from "./landing.module.css";
+
+// TODO: the placeholder number from the top bar; swap in Lemmido's WhatsApp number
+// (country code and number, digits only)
+const WHATSAPP_NUMBER = "11234567890";
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi Lemmido, I'd like to know more about your services.")}`;
 
 const navLinks = [
     { href: "/", label: "Home" },
     { href: "#about", label: "About Us" },
     { href: "#services", label: "Services" },
-    { href: "/guided_tours", label: "Guided tours" },
 ];
 
 export default function SiteHeader() {
@@ -76,8 +80,13 @@ export default function SiteHeader() {
                         <a href="#search" className={styles.searchButton} aria-label="Search services">
                             <Search size={18}/>
                         </a>
-                        <a href="#contact" className={styles.contactButton}>
-                            Contact Us <Phone size={14}/>
+                        <a
+                            href={WHATSAPP_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`${styles.contactButton} ${styles.whatsappButton}`}
+                        >
+                            <WhatsApp size={18}/> WhatsApp Us
                         </a>
                     </div>
                 </div>

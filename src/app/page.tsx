@@ -66,8 +66,9 @@ export default function Page() {
                                 We’re <span className={styles.red}>Right There.</span>
                             </h1>
                             <p className={styles.lead}>
-                                Trusted local help for your parents in Kerala, from hospital visits and companionship
-                                to travel and home repairs. Book online from anywhere in the world
+                                Lemmido connects NRI families in <span className={styles.red}>Thiruvalla</span> with{" "}
+                                <span className={styles.red}>verified staff</span> with companions for everyday needs, drivers
+                                for any journey, and staycations and tour packages for NRIs visiting home with their families.
                             </p>
                             <a href="#search" className={styles.btnPrimary}>
                                 Book your Service <Calendar size={14}/>
@@ -78,12 +79,12 @@ export default function Page() {
                                 <Image src="/landing/hero-companion.jpg" alt="A smiling elderly woman in Kerala" fill sizes="(min-width: 960px) 160px, 45vw" priority/>
                             </div>
                             <div className={`${styles.collagePhoto} ${styles.collageDriver}`}>
-                                <Image src="/landing/hero-driver.jpg" alt="A driver with a passenger in the back seat" fill sizes="(min-width: 960px) 160px, 45vw" priority/>
+                                <Image src="/landing/driver-istock.jpg" alt="A smiling driver turning to greet his passenger" fill sizes="(min-width: 960px) 160px, 45vw" priority/>
                             </div>
                             <div className={`${styles.collagePhoto} ${styles.collageTemple}`}>
                                 <Image src="/landing/hero-tour.jpg" alt="A country boat on the Kerala backwaters" fill sizes="(min-width: 960px) 160px, 45vw" priority/>
                             </div>
-                            <Image src="/landing/logo-mark.svg" alt="" width={100} height={114} unoptimized className={styles.collageMark}/>
+                            <Image src="/landing/logo-mark.svg" alt="" width={100} height={90} unoptimized className={styles.collageMark}/>
                         </div>
                     </div>
                 </section>
@@ -110,23 +111,29 @@ export default function Page() {
                             </div>
                         </div>
                         <div className={styles.aboutText}>
-                            <p className={styles.eyebrow}>Get About Us</p>
-                            <h2 className={styles.h2}>More About Lemmido</h2>
-                            <p>Your family in India, cared for while you’re away. Book companions, hospital visits, travel, and home help in Thiruvalla, all online.</p>
+                            <p className={styles.eyebrow}>Our Story</p>
+                            <h2 className={styles.h2}>Why We Started Lemmido</h2>
                             <p>
-                                No NRI should ever feel too far away to care for their family.<br/>
-                                To be the trusted pair of hands for every Indian family living apart.<br/>
-                                Distance shouldn’t decide how well your family is cared for.
+                                Lemmido was born in <strong className={styles.red}>Thiruvalla</strong>, where almost every
+                                family has someone abroad. We kept hearing the same story: a parent needing a lift to the
+                                hospital, a child overseas wishing they could be there. So we became that someone, a
+                                familiar face who shows up, stays by their side and sends you word that all is well.
+                                You’re far away, but your family is never alone.
                             </p>
                             <p>
-                                Lemmido started in Thiruvalla, a town where almost every family has someone living abroad.
-                                We saw parents managing alone and NRIs feeling helpless from far away. So we built a simple
-                                way to book trusted local help for anything your family needs, from companionship and
-                                hospital visits to travel and home repairs. You’re far away, but your family is never alone.
+                                Trusted help for your family in Thiruvalla, booked
+                                online from anywhere in the world.
                             </p>
-                            <a href="#services" className={styles.btnPrimary}>
-                                Read More <ArrowRight size={12}/>
-                            </a>
+                            <p>
+                                <strong className={styles.meaning}>
+                                    <Image src="/landing/logo.svg" alt="Lemmido" width={88} height={18} unoptimized/>
+                                    means <span className={styles.ink}>Let me do it!</span>
+                                </strong>
+                                Our <span className={styles.red}>verified staff</span> are there for your parents like a friend in your hometown.
+                            </p>
+                            <Link href="/companion" className={styles.btnPrimary}>
+                                Hire a Companion <ArrowRight size={12}/>
+                            </Link>
                         </div>
                     </div>
                 </section>

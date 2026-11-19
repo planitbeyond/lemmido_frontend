@@ -14,10 +14,13 @@ type Props = {
     // Highlights the field the next map click will fill
     active: boolean;
     onFocus: () => void;
+    // Shown inside the box, left of the text; switches to the booking wizard's look
+    icon?: React.ReactNode;
+    placeholder?: string;
 };
 
 // A search box with a dropdown of places in Kerala.
-export default function PlaceSearch({ label, value, onChange, active, onFocus }: Props) {
+export default function PlaceSearch({ label, value, onChange, active, onFocus, icon, placeholder = "Search places in Kerala" }: Props) {
     const listId = useId();
     const [places, setPlaces] = useState<google.maps.PlacesLibrary | null>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -133,8 +136,27 @@ export default function PlaceSearch({ label, value, onChange, active, onFocus }:
 
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <label htmlFor={`${listId}-input`}>{label}</label>
-            <div style={{ position: "relative" }}>
+            <label htmlFor={`${listId}-input`} style={icon ? { fontSize: 17, fontWeight: 500, color: "rgba(0, 0, 0, 0.85)" } : undefined}>
+                {label}
+            </label>
+            <div
+                style={
+                    icon
+                        ? {
+                              position: "relative",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              height: 46,
+                              padding: "0 10px",
+                              background: "#fff",
+                              border: `1px solid ${active ? "#e8193c" : "#ddd"}`,
+                              borderRadius: 12,
+                          }
+                        : { position: "relative" }
+                }
+            >
+                {icon}
                 <input
                     id={`${listId}-input`}
                     role="combobox"
@@ -142,7 +164,7 @@ export default function PlaceSearch({ label, value, onChange, active, onFocus }:
                     aria-controls={listId}
                     aria-autocomplete="list"
                     aria-activedescendant={showList && highlighted >= 0 ? `${listId}-${highlighted}` : undefined}
-                    placeholder={loadError ? "Search unavailable" : places ? "Search places in Kerala" : "Loading…"}
+                    placeholder={loadError ? "Search unavailable" : places ? placeholder : "Loading…"}
                     disabled={!places}
                     value={query}
                     onChange={(event) => {
@@ -155,14 +177,18 @@ export default function PlaceSearch({ label, value, onChange, active, onFocus }:
                     }}
                     onBlur={() => setOpen(false)}
                     onKeyDown={handleKeyDown}
-                    style={{
-                        width: "100%",
-                        boxSizing: "border-box",
-                        padding: 8,
-                        border: active ? "2px solid #1a73e8" : "1px solid #ccc",
-                        borderRadius: 6,
-                        font: "inherit",
-                    }}
+                    style={
+                        icon
+                            ? { flex: 1, minWidth: 0, height: "100%", padding: "0 4px", border: "none", outline: "none", background: "none", font: "inherit", fontSize: 15 }
+                            : {
+                                  width: "100%",
+                                  boxSizing: "border-box",
+                                  padding: 8,
+                                  border: active ? "2px solid #1a73e8" : "1px solid #ccc",
+                                  borderRadius: 6,
+                                  font: "inherit",
+                              }
+                    }
                 />
                 {showList && (
                     <ul

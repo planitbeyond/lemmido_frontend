@@ -13,6 +13,7 @@ type Props = {
     to: PickedLocation | null;
     // Called with the address of a clicked spot in Kerala
     onMapPick: (location: PickedLocation) => void;
+    minHeight?: number;
 };
 
 type MapParts = {
@@ -25,7 +26,7 @@ type MapParts = {
 type RouteSummary = { distance: string; duration: string };
 
 // One map showing both pins. Clicking it picks a spot.
-export default function RideMap({ from, to, onMapPick }: Props) {
+export default function RideMap({ from, to, onMapPick, minHeight = 360 }: Props) {
     const mapRef = useRef<HTMLDivElement>(null);
     // Google's map objects are changed in place, so they live in a ref, not state
     const partsRef = useRef<MapParts | null>(null);
@@ -174,7 +175,7 @@ export default function RideMap({ from, to, onMapPick }: Props) {
 
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: 6, height: "100%" }}>
-            <div ref={mapRef} style={{ flex: 1, minHeight: 360, borderRadius: 6, border: "1px solid #ccc" }}/>
+            <div ref={mapRef} style={{ flex: 1, minHeight, borderRadius: 6, border: "1px solid #ccc" }}/>
             {routeShown && route && (
                 <span style={{ fontSize: 14 }}>
                     Route: <strong>{route.distance}</strong> · about <strong>{route.duration}</strong> by car

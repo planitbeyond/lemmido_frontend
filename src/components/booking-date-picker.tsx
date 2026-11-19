@@ -7,6 +7,10 @@ import { parseDateInputValue, toDateInputValue, useEarliestBookingDate } from ".
 
 type Props = {
     label: string;
+    // Keeps the label for screen readers only
+    hideLabel?: boolean;
+    // Colour of the picked day; the blue default matches the other forms
+    accentColor?: string;
 } & (
     // One day, submitted under `name` as YYYY-MM-DD
     | {
@@ -115,7 +119,7 @@ function useDateList(path: string | undefined, key: string, what: string) {
 // Days inside the notice period, fully booked days and (with a task length) days
 // with no free helper can't be picked, and a range can't run across them.
 export default function BookingDatePicker(props: Props) {
-    const { label } = props;
+    const { label, hideLabel = false, accentColor = "#1a73e8" } = props;
     const earliest = useEarliestBookingDate();
     const firstDay = earliest ? parseDateInputValue(earliest) : undefined;
     const lastMonth = firstDay && new Date(firstDay.getFullYear(), firstDay.getMonth() + MONTHS_AHEAD, 1);
@@ -143,7 +147,11 @@ export default function BookingDatePicker(props: Props) {
         startMonth: firstDay,
         endMonth: lastMonth,
         disabled,
-        style: { "--rdp-accent-color": "#1a73e8", "--rdp-accent-background-color": "#e8f0fe", margin: 0 } as React.CSSProperties,
+        style: {
+            "--rdp-accent-color": accentColor,
+            "--rdp-accent-background-color": `color-mix(in srgb, ${accentColor} 12%, white)`,
+            margin: 0,
+        } as React.CSSProperties,
     };
 
     let picker: React.ReactNode;
@@ -203,7 +211,7 @@ export default function BookingDatePicker(props: Props) {
 
     return (
         <div role="group" aria-label={label} style={{ display: "flex", flexDirection: "column", gap: 4, position: "relative" }}>
-            {label}
+            {!hideLabel && label}
             {picker}
         </div>
     );

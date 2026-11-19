@@ -5,7 +5,7 @@ import { ArrowRight } from "./icons";
 import styles from "./landing.module.css";
 
 const serviceOptions = [
-    { value: "companion", label: "Hospital visit" },
+    { value: "companion", label: "Companion" },
     { value: "guided_tours", label: "Guided tour" },
     { value: "driver", label: "Driver" },
 ];
