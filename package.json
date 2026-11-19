@@ -14,10 +14,12 @@
     "next": "16.4.5",
     "pg": "^8.23.1",
     "react": "19.3.0",
+    "react-day-picker": "^10.0.2",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
+    "@types/google.maps": "^3.66.10",
     "@types/node": "^20",
     "@types/pg": "^8.23.1",
     "@types/react": "^19",
