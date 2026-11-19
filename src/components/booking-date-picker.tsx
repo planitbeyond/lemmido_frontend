@@ -18,9 +18,40 @@ type Props = {
           // Called with the picked day as YYYY-MM-DD, or undefined when cleared
           onChange?: (day: string | undefined) => void;
       }
-    // A stay of one night or more, submitted as `startName` and `endName`
-    | { mode: "range"; startName: string; endName: string }
+    // A span of days, submitted as `startName` and `endName` (YYYY-MM-DD). Counted in
+    // nights for a stay (check-out after check-in), or in days for a job that runs
+    // over several days (the last day after the first, both counted)
+    | {
+          mode: "range";
+          startName: string;
+          endName: string;
+          unit?: "nights" | "days";
+          // Called with the first and last day and the count, or undefined until both are picked
+          onChange?: (range: { from: string; to: string; count: number } | undefined) => void;
+      }
 );
+
+// What the range calendar says, per unit
+const RANGE_TEXT = {
+    nights: {
+        pickStart: "Pick the check-in day.",
+        pickEnd: "Now pick the check-out day.",
+        startError: "Pick the check-in day on the calendar.",
+        endError: "Pick a check-out day after the check-in day.",
+        // Picking the same day twice gives zero nights
+        count: (gapDays: number) => gapDays,
+        label: (n: number) => `${n} night${n === 1 ? "" : "s"}`,
+    },
+    days: {
+        pickStart: "Pick the first day.",
+        pickEnd: "Now pick the last day.",
+        startError: "Pick the first day on the calendar.",
+        endError: "Pick a last day after the first day.",
+        // Both ends are working days; one day is a single-day booking, not a range
+        count: (gapDays: number) => (gapDays > 0 ? gapDays + 1 : 0),
+        label: (n: number) => `${n} days`,
+    },
+};
 
 // How far ahead the calendar lets you go
 const MONTHS_AHEAD = 12;
@@ -117,29 +148,37 @@ export default function BookingDatePicker(props: Props) {
 
     let picker: React.ReactNode;
     if (props.mode === "range") {
+        const text = RANGE_TEXT[props.unit ?? "nights"];
+        const { onChange } = props;
         const { from, to } = range ?? {};
-        // Picking the same day twice gives from === to, which is zero nights
-        const nights = from && to ? Math.round((to.getTime() - from.getTime()) / DAY_MS) : 0;
+        // DST-safe: local midnights can be 23 or 25 h apart
+        const countOf = (r: DateRange | undefined) =>
+            r?.from && r.to ? text.count(Math.round((r.to.getTime() - r.from.getTime()) / DAY_MS)) : 0;
+        const count = countOf(range);
         picker = (
             <>
                 <DayPicker
                     {...calendar}
                     mode="range"
                     selected={range}
-                    onSelect={setRange}
+                    onSelect={(picked) => {
+                        setRange(picked);
+                        const n = countOf(picked);
+                        onChange?.(n > 0 ? { from: toDateInputValue(picked!.from!), to: toDateInputValue(picked!.to!), count: n } : undefined);
+                    }}
                     excludeDisabled
                     resetOnSelect
                     footer={
-                        nights > 0 ? `${from!.toDateString()} → ${to!.toDateString()} · ${nights} night${nights === 1 ? "" : "s"}`
-                        : from ? "Now pick the check-out day."
-                        : "Pick the check-in day."
+                        count > 0 ? `${from!.toDateString()} → ${to!.toDateString()} · ${text.label(count)}`
+                        : from ? text.pickEnd
+                        : text.pickStart
                     }
                 />
-                <HiddenField name={props.startName} value={from ? toDateInputValue(from) : ""} error={from ? "" : "Pick the check-in day on the calendar."}/>
+                <HiddenField name={props.startName} value={from ? toDateInputValue(from) : ""} error={from ? "" : text.startError}/>
                 <HiddenField
                     name={props.endName}
-                    value={nights > 0 ? toDateInputValue(to!) : ""}
-                    error={nights > 0 || !from ? "" : "Pick a check-out day after the check-in day."}
+                    value={count > 0 ? toDateInputValue(to!) : ""}
+                    error={count > 0 || !from ? "" : text.endError}
                 />
             </>
         );

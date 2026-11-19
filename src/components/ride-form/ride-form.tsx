@@ -18,6 +18,10 @@ type Ride = {
     // Driver: how long the driver waits at the destination
     waitingHours?: number;
     vehicleSource: VehicleSource;
+    roundTrip: boolean;
+    days: number;
+    // Multi-day: the last day, YYYY-MM-DD
+    endDate?: string;
     booking: SavedBooking;
 };
 
@@ -54,12 +58,15 @@ const SERVICE_ID: Record<Kind, string> = { driver: "ser_01", companion: "ser_03"
 
 const VEHICLE_OPTIONS: { value: VehicleSource; label: string }[] = [
     { value: "ours", label: "Ours (charged per km)" },
-    { value: "customer", label: "Mine (the helper drives my vehicle, charged per hour of driving)" },
+    { value: "customer", label: "Mine (the helper drives my vehicle and brings it back, charged per hour of driving)" },
 ];
 
-// R1: a task lasts at most 9 h. Longer jobs need an admin's approval, which
-// can't be booked online yet.
+// R1: a task lasts at most 9 h. Longer jobs need an admin's approval: the customer
+// still picks a day and time, and the admin assigns a helper.
 const MAX_TASK_MINUTES = 9 * 60;
+
+// The longest multi-day job that can be booked (the backend's MAX_TRIP_DAYS)
+const MAX_TRIP_DAYS = 30;
 
 // An amount in minor units (paise) as money, e.g. ₹1,945
 function formatMoney(amount: number, currency: string) {
@@ -105,19 +112,36 @@ export default function RideForm({ kind }: Props) {
     // Service hours for a companion, waiting time for a driver
     const [hoursInput, setHoursInput] = useState(kind === "driver" ? "0" : "");
     const [vehicleSource, setVehicleSource] = useState<VehicleSource>("ours");
+    // Driver in our vehicle: bring the customer back to the pickup. A driver in the
+    // customer's vehicle always does, to take the car home.
+    const [roundTripPicked, setRoundTripPicked] = useState(false);
+    const roundTrip = kind === "driver" && (vehicleSource === "customer" || roundTripPicked);
+    // A one-way driver drops the customer off and leaves, so there's no waiting time
+    const hasOnSiteTime = kind !== "driver" || roundTrip;
+    // Driver: a job over several days, picked as a first and last day on the calendar
+    const [multiDay, setMultiDay] = useState(false);
+    const [dayRange, setDayRange] = useState<{ from: string; to: string; count: number } | undefined>();
+    const isMultiDay = kind === "driver" && multiDay;
+    // Undefined until both ends of a multi-day range are picked
+    const days = isMultiDay ? dayRange?.count : 1;
+    const daysValid = days !== undefined && days <= MAX_TRIP_DAYS;
     const hoursField = HOURS_FIELD[kind];
     const hours = hoursInput === "" ? NaN : Number(hoursInput);
-    const onSiteMinutes = hours >= hoursField.min && hours <= 9 ? Math.round(hours * 60) : undefined;
+    const onSiteMinutes = !hasOnSiteTime
+        ? 0
+        : hours >= hoursField.min && hours <= 9 ? Math.round(hours * 60) : undefined;
 
-    // The trip, Base → From → To → Base, and its price, once everything it needs is filled in
+    // The trip and its price, once everything it needs is filled in
     const tripState = useTrip(
-        from && to && onSiteMinutes !== undefined
+        from && to && onSiteMinutes !== undefined && daysValid
             ? {
                   serviceId: SERVICE_ID[kind],
                   vehicleSource,
                   from: { lat: from.lat, lng: from.lng },
                   to: { lat: to.lat, lng: to.lng },
                   onSiteMinutes,
+                  roundTrip,
+                  days: days!,
               }
             : undefined,
     );
@@ -125,14 +149,18 @@ export default function RideForm({ kind }: Props) {
     // The task length the helper availability is checked for: all the driving plus the
     // time at the destination (the backend rounds it up to 30 min)
     const tripMinutes = trip && Math.ceil(trip.taskMinutes);
-    const taskMinutes = tripMinutes && tripMinutes <= MAX_TASK_MINUTES ? tripMinutes : undefined;
+    // Over 9 h or more than one day: an admin prices it and assigns the helper, so any
+    // time can be picked rather than only times a helper is free
+    const needsAdmin = trip !== null && (isMultiDay || (tripMinutes ?? 0) > MAX_TASK_MINUTES);
+    const taskMinutes = tripMinutes && !needsAdmin ? tripMinutes : undefined;
 
     // Why there are no times to pick yet
     let taskHint: string;
     if (!from || !to) taskHint = "Pick From and To first.";
     else if (onSiteMinutes === undefined) taskHint = `Enter the ${hoursField.label.toLowerCase()} first.`;
+    else if (days !== undefined && days > MAX_TRIP_DAYS) taskHint = `A booking can cover at most ${MAX_TRIP_DAYS} days.`;
+    else if (!daysValid) taskHint = "Pick the first and last day first.";
     else if (tripState.status === "error") taskHint = "Couldn't work out the route. Please try again.";
-    else if (trip) taskHint = "This job takes more than 9 hours, so it needs an admin's approval. That can't be booked online yet.";
     else taskHint = "Working out the route…";
 
     function handleMapPick(location: PickedLocation) {
@@ -155,11 +183,12 @@ export default function RideForm({ kind }: Props) {
         const data = new FormData(event.currentTarget);
         // The time list is disabled (so not submitted) when no time is free
         const time = data.get("time");
-        if (typeof time !== "string" || !time || !taskMinutes || !trip) {
-            setError("Pick a time when a helper is free.");
+        if (typeof time !== "string" || !time || (!taskMinutes && !needsAdmin) || !trip) {
+            setError(needsAdmin ? "Pick a time." : "Pick a time when a helper is free.");
             return;
         }
         const date = String(data.get("date"));
+        const endDate = isMultiDay ? String(data.get("endDate")) : undefined;
         const description = String(data.get("description") ?? "");
         setError(null);
         setSaving(true);
@@ -171,7 +200,10 @@ export default function RideForm({ kind }: Props) {
                 from,
                 to,
                 onSiteMinutes,
+                roundTrip,
+                days,
                 date,
+                ...(endDate ? { endDate } : {}),
                 time,
                 ...(kind === "companion" ? { companionPurpose: data.get("companionPurpose") } : {}),
                 ...(description.trim() ? { description } : {}),
@@ -182,8 +214,11 @@ export default function RideForm({ kind }: Props) {
                 date,
                 time,
                 serviceHours: kind === "companion" ? hours : undefined,
-                waitingHours: kind === "driver" ? hours : undefined,
+                waitingHours: kind === "driver" && roundTrip ? hours : undefined,
                 vehicleSource,
+                roundTrip,
+                days: days!,
+                endDate,
                 booking,
             });
         } catch (saveError) {
@@ -237,7 +272,36 @@ export default function RideForm({ kind }: Props) {
                             </label>
                         ))}
                     </fieldset>
-                    <label style={field}>
+                    {kind === "driver" && (
+                        <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                            <input
+                                type="checkbox"
+                                name="roundTrip"
+                                // The helper always brings the customer's own vehicle back
+                                checked={roundTrip}
+                                disabled={vehicleSource === "customer"}
+                                onChange={(event) => setRoundTripPicked(event.target.checked)}
+                            />
+                            Round trip (the driver waits and brings me back to the pickup)
+                        </label>
+                    )}
+                    {kind === "driver" && (
+                        <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                            <input
+                                type="checkbox"
+                                name="multiDay"
+                                checked={multiDay}
+                                onChange={(event) => {
+                                    setMultiDay(event.target.checked);
+                                    // The other calendar's pick doesn't carry over
+                                    setDate(undefined);
+                                    setDayRange(undefined);
+                                }}
+                            />
+                            More than one day (an admin prices and schedules it)
+                        </label>
+                    )}
+                    {hasOnSiteTime && <label style={field}>
                         {hoursField.label}
                         <input
                             name={kind === "driver" ? "waitingHours" : "serviceHours"}
@@ -252,10 +316,24 @@ export default function RideForm({ kind }: Props) {
                             onChange={(event) => setHoursInput(event.target.value)}
                             style={input}
                         />
-                    </label>
+                    </label>}
                     <TripPrice kind={kind} state={tripState}/>
-                    <BookingDatePicker name="date" label="Date" taskMinutes={taskMinutes} onChange={setDate}/>
-                    <BookingTimeSelect name="time" label="Time" date={date} taskMinutes={taskMinutes} taskHint={taskHint}/>
+                    {isMultiDay ? (
+                        <BookingDatePicker
+                            mode="range"
+                            unit="days"
+                            startName="date"
+                            endName="endDate"
+                            label="First day → last day"
+                            onChange={(range) => {
+                                setDayRange(range);
+                                setDate(range?.from);
+                            }}
+                        />
+                    ) : (
+                        <BookingDatePicker name="date" label="Date" taskMinutes={taskMinutes} onChange={setDate}/>
+                    )}
+                    <BookingTimeSelect name="time" label={isMultiDay ? "Start time on the first day" : "Time"} date={date} taskMinutes={taskMinutes} taskHint={taskHint} anyTime={needsAdmin}/>
                     <label style={field}>
                         Description
                         <textarea name="description" rows={4} placeholder="Seats, luggage, stops…" style={input}/>
@@ -278,9 +356,12 @@ export default function RideForm({ kind }: Props) {
                 <p role="status">
                     Booked ({submitted.booking.bookingId}): from {submitted.from.address} to {submitted.to.address} on{" "}
                     {submitted.date} at {submitted.time}
+                    {submitted.endDate ? ` until ${submitted.endDate}` : ""}
                     {submitted.serviceHours !== undefined && ` for ${submitted.serviceHours} h`}
                     {submitted.waitingHours ? `, waiting ${submitted.waitingHours} h` : ""}
-                    {submitted.vehicleSource === "customer" ? ", in your vehicle" : ", in our vehicle"}.{" "}
+                    {submitted.vehicleSource === "customer" ? ", in your vehicle" : ", in our vehicle"}
+                    {submitted.roundTrip ? ", round trip" : ""}
+                    {submitted.days > 1 ? `, ${submitted.days} days` : ""}.{" "}
                     {submitted.booking.approvalMode === "auto" && submitted.booking.quoteAmount !== null
                         ? `Price: ${formatMoney(submitted.booking.quoteAmount, submitted.booking.currency)}. Please pay by ${
                               new Date(submitted.booking.payBy!).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" })
@@ -299,7 +380,7 @@ function TripPrice({ kind, state }: { kind: Kind; state: ReturnType<typeof useTr
     if (state.status === "loading") return <p style={box}>Working out the price…</p>;
     if (state.status === "error") return <p style={{ ...box, color: "#b00020" }}>Couldn&apos;t work out the price: {state.message}</p>;
 
-    const { quote, currency, distanceKm } = state.trip;
+    const { quote, currency, distanceKm, roundTrip } = state.trip;
     if (quote.approvalMode === "admin") {
         return <p style={box}>An admin will send you the price. {quote.reason}.</p>;
     }
@@ -308,12 +389,17 @@ function TripPrice({ kind, state }: { kind: Kind; state: ReturnType<typeof useTr
         ? `${quote.billedKm} km`
         : `${quote.billedDriveHrs} h of driving`;
     const onSite = kind === "driver" ? "waiting" : "service";
+    const route = roundTrip
+        ? "from our base in Thiruvalla to the pickup, the destination, back to the pickup and to base"
+        : "from our base in Thiruvalla and back";
+    // A one-way driver doesn't wait, so there's no waiting charge to show
+    const showOnSite = kind !== "driver" || roundTrip;
     return (
         <div style={box}>
             <strong style={{ fontSize: 16 }}>Price: {money(quote.amount)}</strong>
             <div>
-                Travel {money(quote.travelAmount)} ({travel}, from our base in Thiruvalla and back, {distanceKm.toFixed(1)} km in all)
-                {" + "}{onSite} {money(quote.onSiteAmount)} ({quote.billedOnSiteHrs} h)
+                Travel {money(quote.travelAmount)} ({travel}, {route}, {distanceKm.toFixed(1)} km in all)
+                {showOnSite && <>{" + "}{onSite} {money(quote.onSiteAmount)} ({quote.billedOnSiteHrs} h)</>}
             </div>
             <div style={{ color: "#555" }}>
                 If the job runs over, extra time is charged at {money(quote.overrunRate)} per hour.

@@ -12,6 +12,10 @@ export type TripRequest = {
     to: { lat: number; lng: number };
     // The driver's waiting time or the companion's service time
     onSiteMinutes: number;
+    // Driver in our vehicle: bring the customer back to the pickup
+    roundTrip: boolean;
+    // How many days the job runs over: more than one is priced by an admin
+    days: number;
 };
 
 // Amounts are minor units (paise for INR)
@@ -28,13 +32,18 @@ export type Quote =
       }
     | { approvalMode: "admin"; reason: string };
 
-// The job's trip, Base → From → To → Base, from POST /bookings/trip
+// The job's trip from POST /bookings/trip: Base → From → To → Base, or on a
+// round trip Base → From → To → From → Base
 export type Trip = {
     distanceKm: number;
     driveMinutes: number;
     leaveBaseMinutes: number;
     // Driving plus the time at the destination: what helper availability is checked for
     taskMinutes: number;
+    // What was priced: a driver in the customer's vehicle is always a round trip,
+    // and a one-way driver doesn't wait
+    roundTrip: boolean;
+    onSiteMinutes: number;
     currency: string;
     quote: Quote;
 };
