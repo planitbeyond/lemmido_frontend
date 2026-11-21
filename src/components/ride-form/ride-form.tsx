@@ -595,7 +595,7 @@ export default function RideForm({ kind }: Props) {
                                 <span>Requests must be submitted at least {MIN_NOTICE_HOURS} hours in advance.</span>
                             </div>
                         </div>
-                        <div className={styles.columns} style={{ gridTemplateColumns: "auto minmax(0, 1fr)" }}>
+                        <div className={`${styles.columns} ${styles.columnsDate}`}>
                             <div className={styles.calendar}>
                                 <BookingDatePicker
                                     name="date"
@@ -766,7 +766,7 @@ export default function RideForm({ kind }: Props) {
                                     <textarea name="description" rows={2} placeholder="Seats, luggage, stops…" className={styles.textarea}/>
                                 </label>
                             </div>
-                            <PriceDetails kind={kind} state={tripState} saving={saving}/>
+                            <PriceDetails kind={kind} state={tripState} saving={saving} overLimit={needsAdmin}/>
                         </div>
                     </fieldset>
 
@@ -807,7 +807,7 @@ export default function RideForm({ kind }: Props) {
 
                     {error && <p role="alert" className={styles.error} style={{ marginTop: 20 }}>{error}</p>}
 
-                    <div className={styles.footer} hidden={step === REVIEW_STEP}>
+                    <div className={styles.footer}>
                         {step === DONE_STEP ? (
                             <span/>
                         ) : step === 0 ? (
@@ -826,7 +826,8 @@ export default function RideForm({ kind }: Props) {
                                 Back to home
                                 <Image src="/booking/arrow-right-white.svg" alt="" width={20} height={20}/>
                             </Link>
-                        ) : (
+                        ) : step !== REVIEW_STEP && (
+                            // The review step books from its price panel, so it only needs Back here
                             <button type="submit" className={styles.btnNext} disabled={saving}>
                                 {nextLabel}
                                 <Image src="/booking/arrow-right-white.svg" alt="" width={20} height={20}/>
@@ -861,7 +862,8 @@ function formatDuration(minutes: number) {
 }
 
 // The trip's price, how it's made up, and the button that books it
-function PriceDetails({ kind, state, saving }: { kind: Kind; state: ReturnType<typeof useTrip>; saving: boolean }) {
+// overLimit: the job runs over 9 h or several days, which is why an admin prices it
+function PriceDetails({ kind, state, saving, overLimit }: { kind: Kind; state: ReturnType<typeof useTrip>; saving: boolean; overLimit: boolean }) {
     const trip = state.status === "done" ? state.trip : null;
     const quote = trip?.quote;
     const money = (amount: number) => formatMoney(amount, trip?.currency ?? "INR");
@@ -905,24 +907,27 @@ function PriceDetails({ kind, state, saving }: { kind: Kind; state: ReturnType<t
                             </>
                         )}
                     </dl>
-                    <div className={styles.total}>
-                        <span>Total</span>
-                        <strong>{quote.approvalMode === "auto" ? money(quote.amount) : "To be confirmed"}</strong>
-                    </div>
                     {quote.approvalMode === "admin" ? (
                         <p className={styles.approval}>
-                            Admin approval required. Our team will check this price and email you a quote to accept.
-                            <small> ({quote.reason}.)</small>
+                            {overLimit
+                                ? "Admin approval is required for this service as it takes more than 9 hrs"
+                                : "Admin approval is required for this service."}
                         </p>
                     ) : (
-                        <p className={styles.reviewMuted} style={{ fontSize: 12, margin: 0 }}>
-                            If the job runs over, extra time is {money(quote.overrunRate)} per hour.
-                        </p>
+                        <>
+                            <div className={styles.total}>
+                                <span>Total</span>
+                                <strong>{money(quote.amount)}</strong>
+                            </div>
+                            <p className={styles.reviewMuted} style={{ fontSize: 12, margin: 0 }}>
+                                If the job runs over, extra time is {money(quote.overrunRate)} per hour.
+                            </p>
+                        </>
                     )}
                 </>
             )}
             <button type="submit" className={styles.btnNext} disabled={saving || !quote} style={{ alignSelf: "flex-start" }}>
-                {saving ? "Booking…" : admin ? "Send for Approval" : "Continue to Payment"}
+                {saving ? "Booking…" : admin ? "Request Quote" : "Continue to Payment"}
                 <Image src="/booking/arrow-right-white.svg" alt="" width={20} height={20}/>
             </button>
             <p className={styles.payNote}>

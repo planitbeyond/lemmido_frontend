@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import ServicesCarousel from "../components/landing/services-carousel";
+import ServicesGrid from "../components/landing/services-grid";
 import SiteHeader from "../components/landing/site-header";
 import {
     ArrowLeft,
@@ -90,7 +90,7 @@ export default function Page() {
                 <section id="services" className={styles.section}>
                     <div className={styles.container}>
                         <h2 className={`${styles.h2} ${styles.center}`}>Services for Booking</h2>
-                        <ServicesCarousel/>
+                        <ServicesGrid/>
                         <ul className={styles.features}>
                             {features.map(({ label, Icon }) => (
                                 <li key={label} className={styles.featureCard}>

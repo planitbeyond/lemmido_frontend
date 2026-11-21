@@ -154,6 +154,11 @@
     grid-template-columns: minmax(0, 1fr) 230px;
 }
 
+/* Step 3: the calendar takes what it needs, the times get the rest */
+.columnsDate {
+    grid-template-columns: auto minmax(0, 1fr);
+}
+
 .stack {
     display: flex;
     flex-direction: column;
@@ -732,11 +737,6 @@
     margin-top: 24px;
 }
 
-/* The review step books from its price panel, so it hides this bar */
-.footer[hidden] {
-    display: none;
-}
-
 .btnBack,
 .btnNext {
     display: inline-flex;
@@ -783,7 +783,8 @@
 }
 
 @media (max-width: 760px) {
-    .columnsWide {
+    .columnsWide,
+    .columnsDate {
         grid-template-columns: minmax(0, 1fr);
     }
 

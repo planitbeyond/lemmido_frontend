@@ -576,25 +576,22 @@
 
 /* Services */
 
-.serviceTrack {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 100%;
-    gap: 24px;
+/* Cards wrap and centre, so an odd last card sits in the middle of its row */
+.serviceGrid {
+    --cols: 2;
+    --gap: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--gap);
     margin-top: 28px;
-    padding: 4px 4px 12px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-}
-
-.serviceTrack::-webkit-scrollbar {
-    display: none;
 }
 
 .serviceCard {
-    scroll-snap-align: start;
-    padding: 8px 8px 16px;
+    display: flex;
+    flex-direction: column;
+    width: calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+    padding: 6px 6px 12px;
     border-radius: 14px;
     background: #fff;
     box-shadow: var(--card-shadow);
@@ -602,7 +599,7 @@
 
 .serviceImage {
     position: relative;
-    height: 150px;
+    height: 90px;
     overflow: hidden;
     border-radius: 8px;
 }
@@ -612,16 +609,16 @@
 }
 
 .serviceCard h3 {
-    margin: 16px 6px 8px;
-    font-size: 16px;
+    margin: 10px 4px 4px;
+    font-size: 14px;
     font-weight: 500;
 }
 
 .serviceCard p {
-    min-height: 40px;
-    margin: 0 6px;
-    font-size: 12.5px;
-    line-height: 1.6;
+    flex: 1;
+    margin: 0 4px;
+    font-size: 11px;
+    line-height: 1.5;
     color: var(--body);
 }
 
@@ -629,35 +626,19 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 20px 6px 0;
-    font-size: 11.5px;
+    margin: 10px 4px 0;
+    font-size: 10.5px;
     font-weight: 500;
 }
 
 .servicePrice strong {
-    font-size: 22px;
+    font-size: 17px;
     font-weight: 500;
 }
 
-.carouselControls {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    width: max-content;
-    margin: 20px auto 0;
-    padding: 8px 18px;
-    border-radius: 999px;
-    background: #fff;
-    box-shadow: var(--card-shadow);
-}
-
-.carouselControls button {
-    display: inline-flex;
-    padding: 4px;
-    border: 0;
-    background: none;
-    color: var(--red);
-    cursor: pointer;
+.servicePrice .circleButton {
+    width: 28px;
+    height: 28px;
 }
 
 .features {
@@ -998,8 +979,9 @@
 /* Tablet */
 
 @media (min-width: 640px) {
-    .serviceTrack {
-        grid-auto-columns: calc((100% - 24px) / 2);
+    .serviceGrid {
+        --cols: 3;
+        --gap: 16px;
     }
 
     .features {
@@ -1138,29 +1120,42 @@
         font-size: 14px;
     }
 
-    .serviceTrack {
-        grid-auto-columns: calc((100% - 48px) / 3);
-        gap: 24px;
+    .serviceGrid {
+        --cols: 5;
+        --gap: 20px;
+        margin-top: 36px;
+    }
+
+    .serviceCard {
+        padding: 8px 8px 16px;
     }
 
     .serviceImage {
-        height: 230px;
+        height: 150px;
     }
 
     .serviceCard h3 {
-        font-size: 22px;
+        margin: 14px 6px 6px;
+        font-size: 17px;
     }
 
     .serviceCard p {
-        font-size: 14px;
-    }
-
-    .servicePrice strong {
-        font-size: 32px;
+        margin: 0 6px;
+        font-size: 13px;
     }
 
     .servicePrice {
-        font-size: 14px;
+        margin: 16px 6px 0;
+        font-size: 12px;
+    }
+
+    .servicePrice strong {
+        font-size: 24px;
+    }
+
+    .servicePrice .circleButton {
+        width: 36px;
+        height: 36px;
     }
 
     .circleButton,
