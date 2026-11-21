@@ -10,7 +10,7 @@ import styles from "./landing.module.css";
 // TODO: the placeholder number from the top bar; swap in Lemmido's WhatsApp number
 // (country code and number, digits only)
 const WHATSAPP_NUMBER = "11234567890";
-const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi Lemmido, I'd like to know more about your services.")}`;
+export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi Lemmido, I'd like to know more about your services.")}`;
 
 const navLinks = [
     { href: "/", label: "Home" },
