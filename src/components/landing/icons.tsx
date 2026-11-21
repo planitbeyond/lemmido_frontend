@@ -76,15 +76,6 @@ export function MapPin(props: IconProps) {
     );
 }
 
-export function Search(props: IconProps) {
-    return (
-        <Svg viewBox="0 0 24 24" {...props}>
-            <circle cx="11" cy="11" r="7" strokeWidth="2" stroke="currentColor" />
-            <path d="M20 20L16 16" strokeWidth="2" strokeLinecap="round" stroke="currentColor" />
-        </Svg>
-    );
-}
-
 export function User(props: IconProps) {
     return (
         <Svg viewBox="0 0 24 24" {...props}>

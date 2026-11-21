@@ -8,6 +8,7 @@
     --muted: #777777;
     --placeholder: #888888;
     --pink: #fbe4e8;
+    --shade: #f9e9eb;
     --line: #dddddd;
     --card-shadow: 0 6px 20px rgba(20, 20, 20, 0.08);
 
@@ -81,8 +82,9 @@
     padding: 56px 0;
 }
 
+/* Every other section after the hero: pink at the top, faded to white about 60% of the way down */
 .tinted {
-    background: #fff;
+    background: linear-gradient(180deg, var(--shade) 0%, #fff 60%);
 }
 
 /* Buttons */
@@ -293,11 +295,6 @@
     font-weight: 700;
 }
 
-.menuHint {
-    margin: 4px 8px 8px;
-    color: var(--muted);
-}
-
 .menuItem {
     padding: 9px 8px;
     border: 0;
@@ -439,10 +436,6 @@
     position: relative;
 }
 
-.searchButton {
-    display: none;
-}
-
 .contactButton {
     display: inline-flex;
     align-items: center;
@@ -525,57 +518,6 @@
 .collageTemple {
     grid-column: 2;
     grid-row: 1 / span 2;
-}
-
-.collageMark {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 64px;
-    height: auto;
-    transform: translate(-50%, -50%);
-}
-
-/* Search */
-
-.searchWrap {
-    position: relative;
-    z-index: 2;
-}
-
-.search {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding: 22px;
-    border-radius: 22px;
-    background: #fff;
-    box-shadow: 0 0 20px rgba(20, 20, 20, 0.08);
-}
-
-.field select,
-.field input {
-    width: 100%;
-    height: 43px;
-    padding: 0 16px;
-    border: 1px solid #e3e3ef;
-    border-radius: 999px;
-    background: #fff;
-    color: var(--ink);
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    appearance: none;
-}
-
-.field input::placeholder {
-    color: var(--ink);
-}
-
-.field select:focus,
-.field input:focus {
-    outline: 2px solid rgba(232, 24, 60, 0.35);
-    outline-offset: 1px;
 }
 
 /* About */
@@ -888,41 +830,6 @@
     line-height: 1.6;
 }
 
-/* Blog */
-
-.blogCard {
-    max-width: 350px;
-    margin: 28px auto 0;
-    padding: 8px 8px 20px;
-    border-radius: 14px;
-    background: #fff;
-    box-shadow: var(--card-shadow);
-}
-
-.blogImage {
-    position: relative;
-    height: 140px;
-    overflow: hidden;
-    border-radius: 8px;
-}
-
-.blogImage img {
-    object-fit: cover;
-}
-
-.blogCard h3 {
-    margin: 16px 6px 8px;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.blogCard p {
-    margin: 0 6px 12px;
-    font-size: 12.5px;
-    line-height: 1.6;
-    color: var(--body);
-}
-
 .textLink {
     margin-left: 6px;
     color: var(--red);
@@ -1166,17 +1073,6 @@
         transform: translateX(-50%);
     }
 
-    .searchButton {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 46px;
-        height: 46px;
-        border: 1.5px solid var(--red);
-        border-radius: 50%;
-        color: var(--red);
-    }
-
     .contactButton {
         height: 46px;
         padding: 0 26px;
@@ -1216,26 +1112,6 @@
         grid-row: 1 / span 2;
         align-self: center;
         height: 400px;
-    }
-
-    .collageMark {
-        width: 160px;
-    }
-
-    .search {
-        flex-direction: row;
-        align-items: center;
-        gap: 30px;
-        padding: 26px 30px;
-        border-radius: 999px;
-    }
-
-    .search .field {
-        flex: 1;
-    }
-
-    .search .btnPrimary {
-        flex: none;
     }
 
     .about {
@@ -1389,10 +1265,6 @@
     .ctaInner p {
         max-width: 720px;
         font-size: 16px;
-    }
-
-    .blogCard {
-        max-width: 420px;
     }
 
     .newsletterWrap {

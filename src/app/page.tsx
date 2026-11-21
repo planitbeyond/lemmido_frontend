@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import ServiceSearch from "../components/landing/service-search";
 import ServicesCarousel from "../components/landing/services-carousel";
 import SiteHeader from "../components/landing/site-header";
 import {
@@ -36,7 +35,6 @@ const quickLinks = [
     { href: "/", label: "Home" },
     { href: "#about", label: "About Us" },
     { href: "#services", label: "Services" },
-    { href: "#blog", label: "Blog" },
     { href: "/guided_tours", label: "Guided Tours" },
     { href: "#contact", label: "Contact Us" },
 ];
@@ -57,7 +55,7 @@ export default function Page() {
 
             <main>
                 {/* Hero */}
-                <section className={styles.hero}>
+                <section className={`${styles.hero} ${styles.tinted}`}>
                     <div className={`${styles.container} ${styles.heroInner}`}>
                         <div className={styles.heroText}>
                             <p className={styles.eyebrow}>Let me do it <span className={styles.red}>Lemmido</span></p>
@@ -70,7 +68,7 @@ export default function Page() {
                                 <span className={styles.red}>verified staff</span> with companions for everyday needs, drivers
                                 for any journey, and staycations and tour packages for NRIs visiting home with their families.
                             </p>
-                            <a href="#search" className={styles.btnPrimary}>
+                            <a href="#services" className={styles.btnPrimary}>
                                 Book your Service <Calendar size={14}/>
                             </a>
                         </div>
@@ -84,18 +82,28 @@ export default function Page() {
                             <div className={`${styles.collagePhoto} ${styles.collageTemple}`}>
                                 <Image src="/landing/hero-tour.jpg" alt="A country boat on the Kerala backwaters" fill sizes="(min-width: 960px) 160px, 45vw" priority/>
                             </div>
-                            <Image src="/landing/logo-mark.svg" alt="" width={100} height={90} unoptimized className={styles.collageMark}/>
                         </div>
                     </div>
                 </section>
 
-                {/* Search */}
-                <div className={`${styles.container} ${styles.searchWrap}`}>
-                    <ServiceSearch/>
-                </div>
+                {/* Services */}
+                <section id="services" className={styles.section}>
+                    <div className={styles.container}>
+                        <h2 className={`${styles.h2} ${styles.center}`}>Services for Booking</h2>
+                        <ServicesCarousel/>
+                        <ul className={styles.features}>
+                            {features.map(({ label, Icon }) => (
+                                <li key={label} className={styles.featureCard}>
+                                    <span className={styles.featureIcon}><Icon size={22}/></span>
+                                    {label}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </section>
 
                 {/* About */}
-                <section id="about" className={styles.section}>
+                <section id="about" className={`${styles.section} ${styles.tinted}`}>
                     <div className={`${styles.container} ${styles.about}`}>
                         <div className={styles.aboutPhotos}>
                             <div className={`${styles.oval} ${styles.ovalLarge}`}>
@@ -138,24 +146,8 @@ export default function Page() {
                     </div>
                 </section>
 
-                {/* Services */}
-                <section id="services" className={`${styles.section} ${styles.tinted}`}>
-                    <div className={styles.container}>
-                        <h2 className={`${styles.h2} ${styles.center}`}>Services for Booking</h2>
-                        <ServicesCarousel/>
-                        <ul className={styles.features}>
-                            {features.map(({ label, Icon }) => (
-                                <li key={label} className={styles.featureCard}>
-                                    <span className={styles.featureIcon}><Icon size={22}/></span>
-                                    {label}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </section>
-
                 {/* Process */}
-                <section className={`${styles.section} ${styles.tinted}`}>
+                <section className={styles.section}>
                     <div className={`${styles.container} ${styles.process}`}>
                         <div className={styles.processIntro}>
                             <p className={styles.eyebrow}>Our Process</p>
@@ -173,7 +165,7 @@ export default function Page() {
                 </section>
 
                 {/* Testimonials */}
-                <section className={styles.section}>
+                <section className={`${styles.section} ${styles.tinted}`}>
                     <div className={styles.container}>
                         <p className={`${styles.eyebrow} ${styles.center}`}>Review’s from our members</p>
                         <h2 className={`${styles.h2} ${styles.center}`}>What Our Client Say’s</h2>
@@ -209,22 +201,6 @@ export default function Page() {
                     </div>
                 </section>
 
-                {/* Blog */}
-                <section id="blog" className={styles.section}>
-                    <div className={styles.container}>
-                        <p className={`${styles.eyebrow} ${styles.center}`}>Latest News</p>
-                        <h2 className={`${styles.h2} ${styles.center}`}>Read Latest Blogs</h2>
-                        <article className={styles.blogCard}>
-                            <div className={styles.blogImage}>
-                                <Image src="/landing/blog.jpg" alt="" fill sizes="(min-width: 960px) 350px, 90vw"/>
-                            </div>
-                            <h3>Your loved ones are never far from care</h3>
-                            <p>Lorem ipsum dolor sit amet, consect adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis pul leo.</p>
-                            <a href="#blog" className={styles.textLink}>Read More</a>
-                        </article>
-                    </div>
-                </section>
-
                 {/* Call to action */}
                 <section className={styles.cta}>
                     <Image src="/landing/cta-houseboat.jpg" alt="" fill sizes="100vw" className={styles.ctaBackground}/>
@@ -234,7 +210,7 @@ export default function Page() {
                             Trusted local help for your parents in Kerala, from hospital visits and companionship to
                             travel and home repairs. Book online from anywhere in the world
                         </p>
-                        <a href="#search" className={styles.btnLight}>
+                        <a href="#services" className={styles.btnLight}>
                             Book Now <ArrowRight size={12}/>
                         </a>
                     </div>
