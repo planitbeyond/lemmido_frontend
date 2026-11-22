@@ -262,6 +262,12 @@
     padding: 10px 8px 12px;
     margin-bottom: 4px;
     border-bottom: 1px solid var(--line);
+    border-radius: 8px 8px 0 0;
+    color: var(--ink);
+}
+
+.profile:hover {
+    background: #f8f8f8;
 }
 
 .profile div {
@@ -296,6 +302,7 @@
 }
 
 .menuItem {
+    display: block;
     padding: 9px 8px;
     border: 0;
     border-radius: 8px;

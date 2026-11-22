@@ -10,6 +10,7 @@ import BookingTimeSelect from "../booking-time-select";
 import type { PickedLocation } from "./kerala";
 import PlaceSearch from "./place-search";
 import RideMap from "./ride-map";
+import { accountDetails, COUNTRY_CODES, EMPTY_DETAILS, PlaceIcon, Stepper, WHO_FOR, type Details, type WhoFor } from "./booking-shared";
 import { useTrip, type Quote, type VehicleSource } from "./use-trip";
 import styles from "./booking-wizard.module.css";
 
@@ -78,39 +79,10 @@ const COMPANION_PURPOSES = [
     { value: "other", label: "Other" },
 ];
 
-type WhoFor = "self" | "parents" | "other";
-
-const WHO_FOR: { value: WhoFor; label: string; icon: string }[] = [
-    { value: "self", label: "My Self", icon: "/booking/who-self.svg" },
-    { value: "parents", label: "My Parents", icon: "/booking/who-parents.svg" },
-    { value: "other", label: "Someone Else", icon: "/booking/who-other.svg" },
-];
-
-// Most customers book from abroad for family in Kerala
-const COUNTRY_CODES = ["+91", "+971", "+966", "+974", "+965", "+968", "+973", "+44", "+1", "+61", "+64", "+65", "+60", "+49", "+353"];
-
 const EXTRAS = [
     { value: "childSeat", label: "Child Seat" },
     { value: "wheelchair", label: "Wheelchair Support" },
 ];
-
-type Details = { name: string; phoneCode: string; phone: string };
-
-const EMPTY_DETAILS: Details = { name: "", phoneCode: "+91", phone: "" };
-
-// The signed-in customer's own details, for a booking for themselves. The phone is
-// E.164 from Cognito (+919876543210), split into one of our country codes and the rest.
-function accountDetails(user: { name?: string | null; phoneNumber?: string | null } | undefined): Details {
-    if (!user) return EMPTY_DETAILS;
-    const phoneNumber = user.phoneNumber ?? "";
-    // Longest first, so +971 isn't read as +97 or +9
-    const code = [...COUNTRY_CODES].sort((a, b) => b.length - a.length).find((c) => phoneNumber.startsWith(c));
-    return {
-        name: user.name ?? "",
-        phoneCode: code ?? EMPTY_DETAILS.phoneCode,
-        phone: code ? phoneNumber.slice(code.length) : "",
-    };
-}
 
 // 0.5 h steps up to the 9 h a task may last
 function hourOptions(min: number) {
@@ -180,25 +152,6 @@ function describe(data: FormData) {
     ].filter(Boolean).join("\n");
 }
 
-function Stepper({ step }: { step: number }) {
-    return (
-        <ol className={styles.stepper}>
-            {STEPS.map((label, i) => {
-                const state = i < step ? styles.stepDone : i === step ? styles.stepCurrent : "";
-                return (
-                    <li key={label} className={`${styles.step} ${state}`} aria-current={i === step ? "step" : undefined}>
-                        {i < step
-                            ? <Image src="/booking/step-done.svg" alt="" width={29} height={29} className={styles.stepCircle}/>
-                            : <span className={styles.stepCircle}>{i + 1}</span>}
-                        {label}
-                        {i < step && <span className={styles.srOnly}> (done)</span>}
-                    </li>
-                );
-            })}
-        </ol>
-    );
-}
-
 function StepHeading({ step, title, lead }: { step: number; title: string; lead: string }) {
     return (
         <>
@@ -208,19 +161,6 @@ function StepHeading({ step, title, lead }: { step: number; title: string; lead:
             </h1>
             <p className={styles.lead}>{lead}</p>
         </>
-    );
-}
-
-function PlaceIcon({ field }: { field: Field }) {
-    return field === "from" ? (
-        <span className={styles.placeIcon}>
-            <Image src="/booking/pickup-circle.svg" alt="" width={30} height={30}/>
-            <Image src="/booking/pickup-pin.svg" alt="" width={15} height={20}/>
-        </span>
-    ) : (
-        <span className={styles.placeIcon}>
-            <Image src="/booking/drop-icon.svg" alt="" width={30} height={30}/>
-        </span>
     );
 }
 
@@ -427,7 +367,7 @@ export default function RideForm({ kind }: Props) {
                         <Image src="/booking/close.svg" alt="" width={24} height={24}/>
                     </Link>
                 </div>
-                <Stepper step={step}/>
+                <Stepper steps={STEPS} step={step}/>
 
                 <form ref={formRef} onSubmit={handleSubmit} noValidate className={styles.body}>
                     {/* Every step stays mounted (only hidden), so going back keeps what was entered */}
@@ -930,11 +870,7 @@ function PriceDetails({ kind, state, saving, overLimit }: { kind: Kind; state: R
                 {saving ? "Booking…" : admin ? "Request Quote" : "Continue to Payment"}
                 <Image src="/booking/arrow-right-white.svg" alt="" width={20} height={20}/>
             </button>
-            <p className={styles.payNote}>
-                {admin
-                    ? "No payment now. You'll get a quote by email and pay only if you accept it."
-                    : "Your booking is saved first. You'll see how to pay on the next step."}
-            </p>
+            {admin && <p className={styles.payNote}>No payment now. You&apos;ll get a quote by email and pay only if you accept it.</p>}
         </div>
     );
 }

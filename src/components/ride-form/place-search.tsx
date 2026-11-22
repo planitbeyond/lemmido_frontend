@@ -17,10 +17,12 @@ type Props = {
     // Shown inside the box, left of the text; switches to the booking wizard's look
     icon?: React.ReactNode;
     placeholder?: string;
+    // Styles the label instead of the default look
+    labelClassName?: string;
 };
 
 // A search box with a dropdown of places in Kerala.
-export default function PlaceSearch({ label, value, onChange, active, onFocus, icon, placeholder = "Search places in Kerala" }: Props) {
+export default function PlaceSearch({ label, value, onChange, active, onFocus, icon, placeholder = "Search places in Kerala", labelClassName }: Props) {
     const listId = useId();
     const [places, setPlaces] = useState<google.maps.PlacesLibrary | null>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -136,7 +138,11 @@ export default function PlaceSearch({ label, value, onChange, active, onFocus, i
 
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <label htmlFor={`${listId}-input`} style={icon ? { fontSize: 17, fontWeight: 500, color: "rgba(0, 0, 0, 0.85)" } : undefined}>
+            <label
+                htmlFor={`${listId}-input`}
+                className={labelClassName}
+                style={icon && !labelClassName ? { fontSize: 17, fontWeight: 500, color: "rgba(0, 0, 0, 0.85)" } : undefined}
+            >
                 {label}
             </label>
             <div
