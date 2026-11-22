@@ -43,7 +43,8 @@ type SavedBooking = {
 
 type Field = "from" | "to";
 
-type Kind = "driver" | "companion";
+// A hospital visit is a companion booking whose purpose is always the hospital
+type Kind = "driver" | "companion" | "hospital_visit";
 
 type Props = {
     kind: Kind;
@@ -59,11 +60,12 @@ const DONE_STEP = 5;
 // half an hour; a driver may not wait at all.
 const HOURS_FIELD: Record<Kind, { label: string; min: number; hint: string }> = {
     companion: { label: "Service hours", min: 0.5, hint: "How long the companion stays with you, up to 9 hours." },
+    hospital_visit: { label: "Service hours", min: 0.5, hint: "How long the companion stays with you, up to 9 hours." },
     driver: { label: "Waiting time at the destination", min: 0, hint: "How long the driver waits before the return trip." },
 };
 
 // The backend's service for each kind of ride (services.service_id, from the seed)
-const SERVICE_ID: Record<Kind, string> = { driver: "ser_01", companion: "ser_03" };
+const SERVICE_ID: Record<Kind, string> = { driver: "ser_01", companion: "ser_03", hospital_visit: "ser_03" };
 
 // R1: a task lasts at most 9 h. Longer jobs need an admin's approval: the customer
 // still picks a day and time, and the admin assigns a helper.
@@ -333,6 +335,7 @@ export default function RideForm({ kind }: Props) {
                 ...(endDate ? { endDate } : {}),
                 time,
                 ...(kind === "companion" ? { companionPurpose: data.get("companionPurpose") } : {}),
+                ...(kind === "hospital_visit" ? { companionPurpose: "hospital" } : {}),
                 description: describe(data),
             });
             setSubmitted({
@@ -340,7 +343,7 @@ export default function RideForm({ kind }: Props) {
                 to,
                 date,
                 time,
-                serviceHours: kind === "companion" ? hours : undefined,
+                serviceHours: kind !== "driver" ? hours : undefined,
                 waitingHours: kind === "driver" && roundTrip ? hours : undefined,
                 vehicleSource,
                 roundTrip,
