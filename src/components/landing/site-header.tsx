@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AccountMenu from "./account-menu";
-import { Phone, Search, WhatsApp, socials } from "./icons";
+import { Phone, WhatsApp, socials } from "./icons";
 import styles from "./landing.module.css";
 
 // TODO: the placeholder number from the top bar; swap in Lemmido's WhatsApp number
@@ -73,9 +73,6 @@ export default function SiteHeader() {
                                 </li>
                             ))}
                         </ul>
-                        <a href="#search" className={styles.searchButton} aria-label="Search services">
-                            <Search size={18}/>
-                        </a>
                         <a
                             href={WHATSAPP_URL}
                             target="_blank"

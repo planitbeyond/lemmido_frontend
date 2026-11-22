@@ -110,7 +110,6 @@ export default function AccountMenu() {
                         </>
                     ) : (
                         <>
-                            <p className={styles.menuHint}>Sign in to book and track your services.</p>
                             <button type="button" role="menuitem" className={`${styles.menuItem} ${styles.menuPrimary}`} onClick={signIn}>
                                 Sign in
                             </button>
