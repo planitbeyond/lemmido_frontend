@@ -13,7 +13,7 @@ export const auth = betterAuth({
     modelName: "users",
     fields: { emailVerified: "email_verified", ...timestamps },
     additionalFields: {
-      // E.164, filled from Cognito; users can't set it themselves
+      // E.164; not collected at sign-in, users can't set it themselves
       phoneNumber: { type: "string", required: false, input: false, fieldName: "phone_number" },
     },
   },
@@ -49,10 +49,6 @@ export const auth = betterAuth({
       domain: process.env.COGNITO_DOMAIN!,
       region: process.env.COGNITO_REGION!,
       userPoolId: process.env.COGNITO_USER_POOL_ID!,
-      // better-auth already asks for openid, profile and email
-      scope: ["phone"],
-      // copy Cognito's phone number into the user row
-      mapProfileToUser: (profile) => ({ phoneNumber: profile.phone_number }),
     },
   },
 });
