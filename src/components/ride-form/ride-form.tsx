@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
+import { preload } from "react-dom";
 import Link from "next/link";
 import { authClient } from "../../lib/auth-client";
 import { MIN_NOTICE_HOURS, parseDateInputValue, toDateInputValue } from "../../lib/booking-dates";
@@ -167,7 +168,22 @@ function StepHeading({ step, title, lead }: { step: number; title: string; lead:
     );
 }
 
+// The Vehicle step's car images only mount when that step opens, so they would pop in late.
+// Preloading them with the same props as the <Image> below lets the browser reuse the request.
+const VEHICLE_IMAGES = [
+    { src: "/booking/car-own.png", width: 174, height: 112 },
+    { src: "/booking/car-lemmido.png", width: 170, height: 119 },
+] as const;
+
+function preloadVehicleImages() {
+    for (const image of VEHICLE_IMAGES) {
+        const { props } = getImageProps({ ...image, alt: "" });
+        preload(props.src, { as: "image", imageSrcSet: props.srcSet, fetchPriority: "low" });
+    }
+}
+
 export default function RideForm({ kind }: Props) {
+    preloadVehicleImages();
     const formRef = useRef<HTMLFormElement>(null);
     const stepRefs = useRef<(HTMLFieldSetElement | null)[]>([]);
     const [step, setStep] = useState(0);
@@ -457,7 +473,7 @@ export default function RideForm({ kind }: Props) {
                             <div className={styles.illustration} aria-hidden="true">
                                 <Image src="/booking/blob-1.svg" alt="" width={242} height={216} className={styles.blob1}/>
                                 <Image src="/booking/blob-2.svg" alt="" width={281} height={219} className={styles.blob2} style={{ transform: "rotate(90deg)", transformOrigin: "center" }}/>
-                                <Image src="/booking/family.png" alt="" width={252} height={268} className={styles.family}/>
+                                <Image src="/booking/family.png" alt="" width={252} height={268} loading="eager" className={styles.family}/>
                             </div>
                         </div>
                     </fieldset>
