@@ -16,6 +16,8 @@ type Props = {
     // The job needs an admin's approval, who also assigns the helper: offer every
     // time outside the notice period, without checking helpers
     anyTime?: boolean;
+    // With anyTime: the HH:MM times to offer instead of every half hour
+    slotTimes?: string[];
     // A dropdown, or a grid of buttons (one radio per time)
     variant?: "select" | "chips";
     // Chips: colour of the picked time
@@ -87,14 +89,16 @@ function TimeChips({ name, times, accentColor }: { name: string; times: string[]
 
 // The times on a day that start after the notice period. India has no clock
 // changes, so it's always UTC+05:30.
-function timesAfterNotice(date: string) {
+function timesAfterNotice(date: string, slots: string[]) {
     const earliest = Date.now() + MIN_NOTICE_HOURS * 60 * 60 * 1000;
-    return SLOT_TIMES.filter((time) => Date.parse(`${date}T${time}:00+05:30`) >= earliest);
+    return slots.filter((time) => Date.parse(`${date}T${time}:00+05:30`) >= earliest);
 }
 
 // Start times on the :00/:30 grid when at least one helper is free for the whole
 // task, from the backend API. Showing a time doesn't hold a helper: submit checks again.
 // With anyTime, every time outside the notice period instead.
+export { to12Hour };
+
 export default function BookingTimeSelect({
     label,
     name,
@@ -102,6 +106,7 @@ export default function BookingTimeSelect({
     taskMinutes,
     taskHint = "Enter the service hours first.",
     anyTime = false,
+    slotTimes = SLOT_TIMES,
     variant = "select",
     accentColor = "#1a73e8",
 }: Props) {
@@ -124,7 +129,7 @@ export default function BookingTimeSelect({
 
     // Times loaded for an earlier day or task length don't apply any more
     const current = key && loaded?.key === key ? loaded : null;
-    const times = anyTime && date ? timesAfterNotice(date) : current && "times" in current ? current.times : [];
+    const times = anyTime && date ? timesAfterNotice(date, slotTimes) : current && "times" in current ? current.times : [];
 
     let hint: string | null = null;
     if (!date) hint = "Pick a day first.";

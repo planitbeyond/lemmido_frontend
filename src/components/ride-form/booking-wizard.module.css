@@ -720,12 +720,6 @@
     color: rgba(26, 7, 16, 0.65);
 }
 
-.days small {
-    display: block;
-    font-size: 13px;
-    line-height: 20px;
-}
-
 .stepperButtons {
     display: flex;
     align-items: center;
@@ -818,6 +812,13 @@
 .btnNext:disabled {
     opacity: 0.6;
     cursor: progress;
+}
+
+/* A sent quote request: the button turns black and stays disabled */
+.btnSubmitted:disabled {
+    background: #000;
+    opacity: 1;
+    cursor: default;
 }
 
 .srOnly {
