@@ -58,7 +58,7 @@ export default function Page() {
                 <section className={`${styles.hero} ${styles.tinted}`}>
                     <div className={`${styles.container} ${styles.heroInner}`}>
                         <div className={styles.heroText}>
-                            <p className={styles.eyebrow}>Let me do it <span className={styles.red}>Lemmido</span></p>
+                            <p className={styles.eyebrow}><span className={styles.red}>Lemmido</span>, your friend in hometown!</p>
                             <h1 className={styles.heroTitle}>
                                 You’re Far Away.<br/>
                                 We’re <span className={styles.red}>Right There.</span>
