@@ -10,7 +10,7 @@ import BookingTimeSelect from "../booking-time-select";
 import type { PickedLocation } from "./kerala";
 import PlaceSearch from "./place-search";
 import RideMap from "./ride-map";
-import { accountDetails, COUNTRY_CODES, EMPTY_DETAILS, PlaceIcon, Stepper, WHO_FOR, type Details, type WhoFor } from "./booking-shared";
+import { QuoteSubmitted, accountDetails, COUNTRY_CODES, EMPTY_DETAILS, PlaceIcon, Stepper, WHO_FOR, type Details, type WhoFor } from "./booking-shared";
 import { useTrip, type Quote, type VehicleSource } from "./use-trip";
 import styles from "./booking-wizard.module.css";
 
@@ -43,7 +43,8 @@ type SavedBooking = {
 
 type Field = "from" | "to";
 
-type Kind = "driver" | "companion";
+// A hospital visit is a companion booking whose destination is always a hospital
+type Kind = "driver" | "companion" | "hospital_visit";
 
 type Props = {
     kind: Kind;
@@ -59,11 +60,13 @@ const DONE_STEP = 5;
 // half an hour; a driver may not wait at all.
 const HOURS_FIELD: Record<Kind, { label: string; min: number; hint: string }> = {
     companion: { label: "Service hours", min: 0.5, hint: "How long the companion stays with you, up to 9 hours." },
+    hospital_visit: { label: "Service hours", min: 0.5, hint: "How long the companion stays with you, up to 9 hours." },
     driver: { label: "Waiting time at the destination", min: 0, hint: "How long the driver waits before the return trip." },
 };
 
 // The backend's service for each kind of ride (services.service_id, from the seed)
-const SERVICE_ID: Record<Kind, string> = { driver: "ser_01", companion: "ser_03" };
+// A hospital visit is booked as a companion with the purpose fixed to "hospital"
+const SERVICE_ID: Record<Kind, string> = { driver: "ser_01", companion: "ser_03", hospital_visit: "ser_03" };
 
 // R1: a task lasts at most 9 h. Longer jobs need an admin's approval: the customer
 // still picks a day and time, and the admin assigns a helper.
@@ -314,6 +317,8 @@ export default function RideForm({ kind }: Props) {
             goNext();
             return;
         }
+        // A quote request is sent once
+        if (submitted) return;
         // A later step can undo an earlier one (another vehicle changes the free times)
         if (!check(0, REVIEW_STEP - 1) || !trip || !from || !to || !date) return;
         const data = new FormData(event.currentTarget);
@@ -333,6 +338,7 @@ export default function RideForm({ kind }: Props) {
                 ...(endDate ? { endDate } : {}),
                 time,
                 ...(kind === "companion" ? { companionPurpose: data.get("companionPurpose") } : {}),
+                ...(kind === "hospital_visit" ? { companionPurpose: "hospital" } : {}),
                 description: describe(data),
             });
             setSubmitted({
@@ -340,7 +346,7 @@ export default function RideForm({ kind }: Props) {
                 to,
                 date,
                 time,
-                serviceHours: kind === "companion" ? hours : undefined,
+                serviceHours: kind !== "driver" ? hours : undefined,
                 waitingHours: kind === "driver" && roundTrip ? hours : undefined,
                 vehicleSource,
                 roundTrip,
@@ -348,7 +354,9 @@ export default function RideForm({ kind }: Props) {
                 endDate,
                 booking,
             });
-            setStep(DONE_STEP);
+            // Paid on the site: on to payment. A quote request stays on the review step,
+            // whose price panel then says it's submitted.
+            if (booking.approvalMode === "auto") setStep(DONE_STEP);
         } catch (saveError) {
             setError(`Couldn't save the booking: ${(saveError as Error).message}`);
         } finally {
@@ -372,7 +380,7 @@ export default function RideForm({ kind }: Props) {
                 <form ref={formRef} onSubmit={handleSubmit} noValidate className={styles.body}>
                     {/* Every step stays mounted (only hidden), so going back keeps what was entered */}
                     <fieldset ref={(el) => { stepRefs.current[0] = el; }} hidden={step !== 0} style={{ border: "none", margin: 0, padding: 0 }}>
-                        <StepHeading step={0} title="Who are you booking for?" lead={`Tell us who needs the ${kind === "driver" ? "transportation" : "companion"} service.`}/>
+                        <StepHeading step={0} title="Who are you booking for?" lead={`Tell us who needs the ${kind === "driver" ? "transportation" : kind === "hospital_visit" ? "hospital visit" : "companion"} service.`}/>
                         <div className={`${styles.columns} ${styles.columnsWide}`}>
                             <div className={styles.stack}>
                                 <div className={styles.whoRow} role="radiogroup" aria-label="Who is it for?">
@@ -635,10 +643,7 @@ export default function RideForm({ kind }: Props) {
                                 {kind === "driver" && (
                                     <div className={styles.days}>
                                         <Image src="/booking/calendar.svg" alt="" width={25} height={25}/>
-                                        <span id="days-label">
-                                            Multiple-day booking?
-                                            <small>*Same driver for the whole trip</small>
-                                        </span>
+                                        <span id="days-label">Multiple-day booking?</span>
                                         <span className={styles.stepperButtons} role="group" aria-labelledby="days-label">
                                             <button type="button" className={styles.iconButton} aria-label="One day fewer" disabled={days <= 1} onClick={() => setDays(days - 1)}>
                                                 <Image src="/booking/minus.svg" alt="" width={20} height={20}/>
@@ -670,6 +675,7 @@ export default function RideForm({ kind }: Props) {
                                 >
                                     <span>{from?.address}{review.fromLandmark ? ` (${review.fromLandmark})` : ""}</span>
                                     <span>→ {to?.address}{review.toLandmark ? ` (${review.toLandmark})` : ""}</span>
+                                    {kind === "hospital_visit" && <span className={styles.reviewMuted}>Where to: Hospital</span>}
                                     {kind === "companion" && review.companionPurpose && (
                                         <span className={styles.reviewMuted}>
                                             Where to: {COMPANION_PURPOSES.find((p) => p.value === review.companionPurpose)?.label}
@@ -706,7 +712,14 @@ export default function RideForm({ kind }: Props) {
                                     <textarea name="description" rows={2} placeholder="Seats, luggage, stops…" className={styles.textarea}/>
                                 </label>
                             </div>
-                            <PriceDetails kind={kind} state={tripState} saving={saving} overLimit={needsAdmin}/>
+                            <PriceDetails
+                                kind={kind}
+                                state={tripState}
+                                saving={saving}
+                                overLimit={needsAdmin}
+                                multiDay={isMultiDay}
+                                requested={submitted !== null && submitted.booking.approvalMode !== "auto"}
+                            />
                         </div>
                     </fieldset>
 
@@ -802,8 +815,18 @@ function formatDuration(minutes: number) {
 }
 
 // The trip's price, how it's made up, and the button that books it
-// overLimit: the job runs over 9 h or several days, which is why an admin prices it
-function PriceDetails({ kind, state, saving, overLimit }: { kind: Kind; state: ReturnType<typeof useTrip>; saving: boolean; overLimit: boolean }) {
+// overLimit: the job runs over 9 h or several days, which is why an admin prices it;
+// multiDay: it's the several days; requested: the quote request has been sent
+type PriceDetailsProps = {
+    kind: Kind;
+    state: ReturnType<typeof useTrip>;
+    saving: boolean;
+    overLimit: boolean;
+    multiDay: boolean;
+    requested: boolean;
+};
+
+function PriceDetails({ kind, state, saving, overLimit, multiDay, requested }: PriceDetailsProps) {
     const trip = state.status === "done" ? state.trip : null;
     const quote = trip?.quote;
     const money = (amount: number) => formatMoney(amount, trip?.currency ?? "INR");
@@ -849,9 +872,11 @@ function PriceDetails({ kind, state, saving, overLimit }: { kind: Kind; state: R
                     </dl>
                     {quote.approvalMode === "admin" ? (
                         <p className={styles.approval}>
-                            {overLimit
-                                ? "Admin approval is required for this service as it takes more than 9 hrs"
-                                : "Admin approval is required for this service."}
+                            {multiDay
+                                ? "The Lemmido team will share a quote with you, as the booking is for multiple days."
+                                : overLimit
+                                    ? "Admin approval is required for this service as it takes more than 9 hrs"
+                                    : "Admin approval is required for this service."}
                         </p>
                     ) : (
                         <>
@@ -866,11 +891,22 @@ function PriceDetails({ kind, state, saving, overLimit }: { kind: Kind; state: R
                     )}
                 </>
             )}
-            <button type="submit" className={styles.btnNext} disabled={saving || !quote} style={{ alignSelf: "flex-start" }}>
-                {saving ? "Booking…" : admin ? "Request Quote" : "Continue to Payment"}
-                <Image src="/booking/arrow-right-white.svg" alt="" width={20} height={20}/>
-            </button>
-            {admin && <p className={styles.payNote}>No payment now. You&apos;ll get a quote by email and pay only if you accept it.</p>}
+            {requested ? (
+                <>
+                    <button type="button" className={`${styles.btnNext} ${styles.btnSubmitted}`} disabled style={{ alignSelf: "flex-start" }}>
+                        Submitted
+                    </button>
+                    <QuoteSubmitted/>
+                </>
+            ) : (
+                <>
+                    <button type="submit" className={styles.btnNext} disabled={saving || !quote} style={{ alignSelf: "flex-start" }}>
+                        {saving ? "Booking…" : admin ? "Request Quote" : "Continue to Payment"}
+                        <Image src="/booking/arrow-right-white.svg" alt="" width={20} height={20}/>
+                    </button>
+                    {admin && <p className={styles.payNote}>No payment now. You&apos;ll get a quote by email and pay only if you accept it.</p>}
+                </>
+            )}
         </div>
     );
 }

@@ -4,9 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { authClient } from "../../lib/auth-client";
-import { loadGoogleMaps } from "../../lib/google-maps";
+import { currentLocation } from "../../lib/current-location";
 import { accountDetails, COUNTRY_CODES, EMPTY_DETAILS, PlaceIcon, Stepper, WHO_FOR, type Details, type WhoFor } from "../ride-form/booking-shared";
-import { isInKerala, type PickedLocation } from "../ride-form/kerala";
+import { type PickedLocation } from "../ride-form/kerala";
 import PlaceSearch from "../ride-form/place-search";
 import RideMap from "../ride-form/ride-map";
 import styles from "../ride-form/booking-wizard.module.css";
@@ -36,25 +36,6 @@ const PROPERTY_TYPES = [
 const PROPERTY_WHO_FOR = WHO_FOR.filter((option) => option.value !== "parents");
 
 const NOTES_MAX = 500;
-
-// The device's position as an address, if it's in Kerala
-async function currentLocation(): Promise<PickedLocation> {
-    if (!navigator.geolocation) throw new Error("This browser can't share its location.");
-    const position = await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, () => reject(new Error("Couldn't get your location. Please allow location access or search instead.")), {
-            enableHighAccuracy: true,
-            timeout: 10000,
-        }),
-    );
-    const lat = position.coords.latitude;
-    const lng = position.coords.longitude;
-    await loadGoogleMaps();
-    const { Geocoder } = (await google.maps.importLibrary("geocoding")) as google.maps.GeocodingLibrary;
-    const { results } = await new Geocoder().geocode({ location: { lat, lng } });
-    const components = (results[0]?.address_components ?? []).map((c) => ({ types: c.types, code: c.short_name }));
-    if (!isInKerala(components)) throw new Error("You're not in Kerala right now. Please search for the property's address.");
-    return { address: results[0].formatted_address, lat, lng };
-}
 
 export default function PropertyForm() {
     const [whoFor, setWhoFor] = useState<WhoFor>("self");

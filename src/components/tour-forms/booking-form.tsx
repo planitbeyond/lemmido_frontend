@@ -24,46 +24,37 @@ export function NotesField({ placeholder }: { placeholder: string }) {
 }
 
 type Props = {
-    title: string;
-    description: string;
+    // Left out for a form whose page already says what it's for
+    title?: string;
+    description?: string;
     children: React.ReactNode;
+    // Replaces the plain Submit button, e.g. Back and Request quote. Given whether the
+    // request has been sent, so the button can turn into "Submitted".
+    actions?: React.ReactNode | ((submitted: boolean) => React.ReactNode);
 };
 
 // Not saved anywhere yet: there is no tours endpoint on the backend,
-// so submitting only shows back what was entered.
-export default function BookingForm({ title, description, children }: Props) {
-    const [submitted, setSubmitted] = useState<[string, string][] | null>(null);
+// so submitting only marks the request as sent.
+export default function BookingForm({ title, description, children, actions }: Props) {
+    const [submitted, setSubmitted] = useState(false);
 
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        setSubmitted(
-            [...data.entries()]
-                .map(([name, value]) => [name, String(value)] as [string, string])
-                .filter(([, value]) => value !== ""),
-        );
+        setSubmitted(true);
     }
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 480 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 760 }}>
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <h2 style={{ margin: 0, fontSize: 18 }}>{title}</h2>
-                <p style={{ margin: 0, color: "#555" }}>{description}</p>
+                {title && <h2 style={{ margin: 0, fontSize: 18 }}>{title}</h2>}
+                {description && <p style={{ margin: 0, color: "#555" }}>{description}</p>}
                 {children}
-                <button type="submit" style={{ ...input, cursor: "pointer", alignSelf: "flex-start" }}>
-                    Submit
-                </button>
+                {typeof actions === "function" ? actions(submitted) : actions ?? (
+                    <button type="submit" disabled={submitted} style={{ ...input, cursor: "pointer", alignSelf: "flex-start" }}>
+                        {submitted ? "Sent" : "Submit"}
+                    </button>
+                )}
             </form>
-            {submitted && (
-                <div role="status">
-                    <strong>{title} request</strong>
-                    <ul style={{ margin: "4px 0 0" }}>
-                        {submitted.map(([name, value]) => (
-                            <li key={name}>{name}: {value}</li>
-                        ))}
-                    </ul>
-                </div>
-            )}
         </div>
     );
 }

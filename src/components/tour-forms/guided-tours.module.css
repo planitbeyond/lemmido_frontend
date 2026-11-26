@@ -1,0 +1,665 @@
+/* Guided tours page. Uses the landing page's colour variables (set on .page). */
+
+.wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+}
+
+.h2 {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--ink);
+}
+
+.lead {
+    margin-top: 4px !important;
+    color: var(--body);
+    font-size: 15px;
+}
+
+.error {
+    margin-top: 4px !important;
+    color: var(--red-dark);
+    font-size: 15px;
+}
+
+/* The three tabs, one pill */
+
+.searchBar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 5px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    box-shadow: 0 2px 10px rgba(20, 20, 20, 0.06);
+}
+
+.tabs {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+}
+
+.tab {
+    position: relative;
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 999px;
+    background: none;
+    font: inherit;
+    font-size: 15px;
+    color: var(--body);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.tab span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Thin divider between unselected tabs */
+.tab + .tab::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 25%;
+    height: 50%;
+    border-left: 1px solid var(--line);
+}
+
+/* No divider next to the red tab */
+.tab[aria-selected="true"]::before,
+.tab[aria-selected="true"] + .tab::before {
+    display: none;
+}
+
+.tab[aria-selected="true"] {
+    background: var(--red-dark);
+    color: #fff;
+}
+
+.tab:focus-visible,
+.bookButton:focus-visible,
+.backLink:focus-visible,
+.stepper button:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+}
+
+/* Results */
+
+.resultsAnchor {
+    scroll-margin-top: 16px;
+    margin-top: 24px;
+}
+
+.results {
+    display: flex;
+    flex-direction: column;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(20, 20, 20, 0.04);
+}
+
+.cardPhoto {
+    position: relative;
+    aspect-ratio: 231 / 132;
+    background: var(--shade);
+}
+
+.cardPhoto img {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cardBody {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 8px 8px;
+}
+
+.cardBody h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.cardSummary {
+    font-size: 11px;
+    color: var(--body);
+}
+
+.cardMeta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--body);
+}
+
+.cardMeta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.metaDivider {
+    width: 1px;
+    height: 14px;
+    background: var(--line);
+}
+
+.cardFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+}
+
+.price {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    color: var(--ink);
+}
+
+.price strong {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--red-dark);
+}
+
+.priceUnit {
+    font-size: 12px;
+    color: var(--ink);
+}
+
+.bookButton {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 30px;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 999px;
+    background: var(--red-dark);
+    color: #fff;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.bookButton:hover {
+    background: #a50d25;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    margin-bottom: 16px;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-size: 14px;
+    color: var(--red-dark);
+    cursor: pointer;
+}
+
+
+.main {
+    padding-top: 32px;
+    padding-bottom: 56px;
+}
+
+/* Destination + travellers, in the package and staycation booking forms */
+
+.tripPanel {
+    display: flex;
+    /* Days and travellers always share one line */
+    flex-wrap: nowrap;
+    gap: 16px 24px;
+    /* Only as wide as its counters */
+    width: fit-content;
+    max-width: 100%;
+    padding: 18px 24px 20px;
+    background: #fff;
+    border-radius: 28px;
+    box-shadow: 0 6px 24px rgba(20, 20, 20, 0.08);
+}
+
+.tripField {
+    display: flex;
+    flex: 1 1 240px;
+    max-width: 260px;
+    min-width: 0;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.tripLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.tripLabel svg {
+    color: var(--red-dark);
+}
+
+.pill {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    font: inherit;
+    font-size: 14px;
+    color: var(--body);
+}
+
+.travellers {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-right: 8px;
+}
+
+.travellersHint {
+    white-space: nowrap;
+}
+
+.travellersMax {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stepper output {
+    min-width: 20px;
+    text-align: center;
+    font-size: 17px;
+    color: var(--ink);
+}
+
+.stepper button {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid #c9c9c9;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--muted);
+    font: inherit;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.stepper button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* Extras + description, in the package and staycation booking forms */
+
+.extras {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.extrasTitle {
+    padding: 0;
+    margin-bottom: 10px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.extrasRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 40px;
+}
+
+.check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.check input {
+    appearance: none;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    border: 1px solid #b6b6b6;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.check input:checked {
+    border-color: var(--red-dark);
+    background: var(--red-dark);
+}
+
+.check input:checked::after {
+    content: "";
+    width: 6px;
+    height: 10px;
+    margin-top: -2px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.check input:focus-visible,
+.description textarea:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+}
+
+.description {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.descriptionHead {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--body);
+}
+
+.descriptionCount {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.description textarea {
+    width: 100%;
+    min-height: 92px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    resize: vertical;
+}
+
+.description textarea::placeholder {
+    color: #c4c4c4;
+}
+
+/* Booking form pieces borrowed from the booking wizard read its colour variables */
+
+.wrap {
+    --pink: #ef498f;
+    --text: rgba(26, 7, 16, 0.85);
+    --grey: #757575;
+    --stroke: #dddddd;
+    --input-stroke: #d9d9d9;
+}
+
+.formHeading {
+    margin-top: 12px !important;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+/* The wizard's banner sits under a step heading; here it follows the form's own gap */
+.notice {
+    max-width: 580px;
+    margin-top: 0;
+}
+
+/* Custom trip */
+
+.customForm {
+    margin-top: 20px;
+}
+
+.counterRow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.counterBox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 48px;
+    padding: 8px 12px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(20, 20, 20, 0.06);
+}
+
+.counterLabel {
+    display: block;
+    font-size: 14px;
+    color: var(--ink);
+}
+
+.counterHint {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+}
+
+/* Calendar on the left, pickup and return times on the right */
+.dateTime {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 24px 32px;
+}
+
+.times {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-top: 4px;
+}
+
+@media (max-width: 640px) {
+    .dateTime {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .counterRow {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .tab {
+        gap: 4px;
+        padding: 6px 4px;
+        font-size: 13px;
+    }
+
+    .tripPanel {
+        width: 100%;
+        gap: 12px;
+        padding: 14px 14px 16px;
+    }
+
+    .travellers {
+        padding: 0 6px 0 12px;
+    }
+
+    /* Room for both counters side by side */
+    .travellersHint {
+        display: none;
+    }
+
+    /* The words fit at phone width once the icons go */
+    .tab svg {
+        display: none;
+    }
+}
+
+/* Name and phone, in the package booking form */
+.contact {
+    max-width: 480px;
+}
+
+.contact .formHeading {
+    margin-top: 4px !important;
+}
+
+/* The wizard's fields grow along a row; stacked here, that basis would be their height */
+.contact > * {
+    flex: none;
+}
+
+/* Booking: the picked tour on the left, its form on the right */
+.booking {
+    display: grid;
+    grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+    align-items: start;
+    gap: 24px 48px;
+}
+
+.summary {
+    position: sticky;
+    top: 16px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(20, 20, 20, 0.04);
+}
+
+.summaryBody {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+}
+
+.summaryBody .h2 {
+    font-size: 20px;
+}
+
+.summaryText {
+    font-size: 14px;
+    color: var(--body);
+}
+
+.summaryBody .cardMeta {
+    font-size: 12px;
+}
+
+@media (max-width: 800px) {
+    .booking {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .summary {
+        position: static;
+    }
+}
+
+/* The companion booking's price card, under the package and staycation forms */
+.priceDetails {
+    max-width: 460px;
+    margin-top: 12px;
+}
+
+/* Custom trip: Request quote with the note about the email under it */
+.quoteAction {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    text-align: right;
+}
+
+.quoteAction p {
+    margin: 0;
+    max-width: 260px;
+}
+
+/* After sending: the yellow note under the "Submitted" button */
+/* Full width inside the price card; beside Back on the custom trip it stays narrow */
+.submitted {
+    text-align: left;
+}
+
+.quoteAction .submitted {
+    max-width: 360px;
+}

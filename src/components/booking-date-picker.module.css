@@ -1,0 +1,41 @@
+/* The picked day and the days after it, for a booking that runs several days.
+   A band in the light accent behind the days, the first day a filled circle. */
+
+.span {
+    background: var(--rdp-accent-background-color);
+}
+
+.spanStart {
+    border-radius: 50% 0 0 50%;
+}
+
+.spanEnd {
+    border-radius: 0 50% 50% 0;
+}
+
+/* The band also rounds off where a week row ends or starts */
+.span:first-child {
+    border-top-left-radius: 50%;
+    border-bottom-left-radius: 50%;
+}
+
+.span:last-child {
+    border-top-right-radius: 50%;
+    border-bottom-right-radius: 50%;
+}
+
+/* A one-day span is both ends */
+.spanStart.spanEnd {
+    border-radius: 50%;
+}
+
+.span :global(.rdp-day_button) {
+    color: var(--rdp-accent-color);
+    font-weight: 600;
+}
+
+.spanStart :global(.rdp-day_button) {
+    border-color: var(--rdp-accent-color);
+    background: var(--rdp-accent-color);
+    color: #fff;
+}

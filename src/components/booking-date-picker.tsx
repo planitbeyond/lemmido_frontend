@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { DayPicker, type DateRange, type Matcher } from "react-day-picker";
 import "react-day-picker/style.css";
+import styles from "./booking-date-picker.module.css";
 import { parseDateInputValue, toDateInputValue, useEarliestBookingDate } from "../lib/booking-dates";
 
 type Props = {
@@ -21,6 +22,9 @@ type Props = {
           taskMinutes?: number;
           // Called with the picked day as YYYY-MM-DD, or undefined when cleared
           onChange?: (day: string | undefined) => void;
+          // Fills the picked day and shades the days after it, this many days in all
+          // (e.g. a 3-day trip from the 28th shades the 28th to the 30th)
+          spanDays?: number;
       }
     // A span of days, submitted as `startName` and `endName` (YYYY-MM-DD). Counted in
     // nights for a stay (check-out after check-in), or in days for a job that runs
@@ -191,7 +195,11 @@ export default function BookingDatePicker(props: Props) {
             </>
         );
     } else {
-        const { onChange } = props;
+        const { onChange, spanDays } = props;
+        // The span's last day; local dates, so DST doesn't shift it
+        const spanEnd = day && spanDays && spanDays > 0
+            ? new Date(day.getFullYear(), day.getMonth(), day.getDate() + spanDays - 1)
+            : undefined;
         picker = (
             <>
                 <DayPicker
@@ -202,7 +210,10 @@ export default function BookingDatePicker(props: Props) {
                         setDay(picked);
                         onChange?.(picked && toDateInputValue(picked));
                     }}
-                    footer={day ? `Selected: ${day.toDateString()}` : "Pick a day."}
+                    {...(day && spanEnd ? {
+                        modifiers: { spanStart: day, span: { from: day, to: spanEnd }, spanEnd },
+                        modifiersClassNames: { spanStart: styles.spanStart, span: styles.span, spanEnd: styles.spanEnd },
+                    } : {})}
                 />
                 <HiddenField name={props.name} value={day ? toDateInputValue(day) : ""} error={day ? "" : "Pick a day on the calendar."}/>
             </>

@@ -51,6 +51,16 @@ export function Stepper({ steps, step }: { steps: string[]; step: number }) {
     );
 }
 
+// Shown once a request that needs a quote is sent: nothing is paid on the site,
+// the team prices it and emails the quote
+export function QuoteSubmitted({ className }: { className?: string }) {
+    return (
+        <p role="status" className={className ? `${styles.approval} ${className}` : styles.approval}>
+            Your quote request is submitted. The Lemmido team will share a quote with you by email.
+        </p>
+    );
+}
+
 // The pin left of an address box: the pickup's (also a single address's) or the drop's
 export function PlaceIcon({ field }: { field: "from" | "to" }) {
     return field === "from" ? (
