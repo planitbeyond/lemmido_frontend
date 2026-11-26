@@ -101,7 +101,7 @@ export default function PropertyForm() {
             <div className={styles.card}>
                 <div className={styles.top}>
                     <Image src="/booking/logo.svg" alt="Lemmido" width={86} height={17}/>
-                    <Link href="/" className={styles.close} aria-label="Close and go back home">
+                    <Link href="/#services" className={styles.close} aria-label="Close and go back to services">
                         <Image src="/booking/close.svg" alt="" width={24} height={24}/>
                     </Link>
                 </div>
@@ -248,7 +248,7 @@ export default function PropertyForm() {
                     {error && <p role="alert" className={styles.error} style={{ marginTop: 20 }}>{error}</p>}
 
                     <div className={styles.footer}>
-                        <Link href="/" className={styles.btnBack}>
+                        <Link href="/#services" className={styles.btnBack}>
                             <Image src="/booking/arrow-right.svg" alt="" width={20} height={20}/>
                             Back
                         </Link>

@@ -188,7 +188,7 @@
 .cardFooter {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 8px;
     margin-top: auto;
     padding-top: 8px;
@@ -462,7 +462,7 @@
 /* Booking form pieces borrowed from the booking wizard read its colour variables */
 
 .wrap {
-    --pink: #ef498f;
+    --pink: #9d5cf0;
     --text: rgba(26, 7, 16, 0.85);
     --grey: #757575;
     --stroke: #dddddd;

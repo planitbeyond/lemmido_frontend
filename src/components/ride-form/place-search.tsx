@@ -10,7 +10,8 @@ const SEARCH_DELAY_MS = 250;
 type Props = {
     label: string;
     value: PickedLocation | null;
-    onChange: (location: PickedLocation) => void;
+    // null when the box is cleared with its cross
+    onChange: (location: PickedLocation | null) => void;
     // Highlights the field the next map click will fill
     active: boolean;
     onFocus: () => void;
@@ -35,6 +36,7 @@ export default function PlaceSearch({ label, value, onChange, active, onFocus, i
 
     // Groups the keystrokes and the final lookup of one search into a single billed session
     const sessionRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     // When the location is set from outside (a map click), show its address in the box
     const [shownValue, setShownValue] = useState(value);
@@ -117,6 +119,15 @@ export default function PlaceSearch({ label, value, onChange, active, onFocus, i
         });
     }
 
+    // The cross: empties the box and unsets the location, then puts the cursor back
+    function clear() {
+        setQuery("");
+        setSuggestions([]);
+        setPickError(null);
+        onChange(null);
+        inputRef.current?.focus();
+    }
+
     function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
         if (!open || suggestions.length === 0) return;
         if (event.key === "ArrowDown") {
@@ -156,7 +167,7 @@ export default function PlaceSearch({ label, value, onChange, active, onFocus, i
                               height: 46,
                               padding: "0 10px",
                               background: "#fff",
-                              border: `1px solid ${active ? "#e8193c" : "#ddd"}`,
+                              border: `1px solid ${active ? "#6a0ac9" : "#ddd"}`,
                               borderRadius: 12,
                           }
                         : { position: "relative" }
@@ -164,6 +175,7 @@ export default function PlaceSearch({ label, value, onChange, active, onFocus, i
             >
                 {icon}
                 <input
+                    ref={inputRef}
                     id={`${listId}-input`}
                     role="combobox"
                     aria-expanded={showList}
@@ -189,13 +201,40 @@ export default function PlaceSearch({ label, value, onChange, active, onFocus, i
                             : {
                                   width: "100%",
                                   boxSizing: "border-box",
-                                  padding: 8,
+                                  padding: query && places ? "8px 32px 8px 8px" : 8,
                                   border: active ? "2px solid #1a73e8" : "1px solid #ccc",
                                   borderRadius: 6,
                                   font: "inherit",
                               }
                     }
                 />
+                {query && places && (
+                    <button
+                        type="button"
+                        aria-label={`Clear ${label}`}
+                        // mousedown would blur the input first and close the list mid-click
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={clear}
+                        style={{
+                            ...(icon ? {} : { position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)" }),
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            width: 24,
+                            height: 24,
+                            padding: 0,
+                            border: "none",
+                            background: "none",
+                            color: "#b5b5b5",
+                            cursor: "pointer",
+                        }}
+                    >
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                            <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+                        </svg>
+                    </button>
+                )}
                 {showList && (
                     <ul
                         id={listId}

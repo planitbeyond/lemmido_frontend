@@ -1,8 +1,8 @@
 /* Booking wizard (Figma "Section 10"), scaled to about 80%. A 760px card, stacking below 760px. */
 
 .page {
-    --red: #e8193c;
-    --pink: #ef498f;
+    --red: #6a0ac9;
+    --pink: #9d5cf0;
     --text: rgba(26, 7, 16, 0.85);
     --muted: rgba(86, 86, 86, 0.85);
     --grey: #757575;
@@ -88,7 +88,7 @@
 }
 
 .stepDone:not(:last-child)::after {
-    background: rgba(232, 25, 60, 0.6);
+    background: rgba(106, 10, 201, 0.6);
 }
 
 .stepCircle {
@@ -234,7 +234,7 @@
 }
 
 .whoCard:has(input:checked) {
-    border-color: rgba(232, 25, 60, 0.52);
+    border-color: rgba(106, 10, 201, 0.52);
     filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.25));
 }
 
@@ -411,7 +411,7 @@
     height: 16px;
     margin: 0;
     border-radius: 12px;
-    background: rgba(232, 25, 60, 0.16);
+    background: rgba(106, 10, 201, 0.16);
     cursor: pointer;
 }
 
@@ -482,7 +482,7 @@
     gap: 4px;
     height: 28px;
     padding: 0 10px;
-    border: 1px solid rgba(232, 25, 60, 0.28);
+    border: 1px solid rgba(106, 10, 201, 0.28);
     border-radius: 10px;
     background: #fff;
     font: inherit;
@@ -576,7 +576,7 @@
     margin-top: 16px;
     padding: 8px 12px;
     border-radius: 5px;
-    background: rgba(232, 25, 60, 0.19);
+    background: rgba(106, 10, 201, 0.19);
 }
 
 .notice strong {
@@ -746,7 +746,7 @@
 .price {
     padding: 12px 14px;
     border-radius: 10px;
-    background: rgba(232, 25, 60, 0.06);
+    background: rgba(106, 10, 201, 0.06);
     font-size: 13px;
     line-height: 1.5;
 }
@@ -923,7 +923,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: rgba(232, 25, 60, 0.19);
+    background: rgba(106, 10, 201, 0.19);
 }
 
 .editLink {
@@ -1016,7 +1016,7 @@
     justify-content: space-between;
     padding: 8px 10px;
     border-radius: 8px;
-    background: rgba(243, 133, 152, 0.28);
+    background: #ece0fc;
     font-size: 17px;
     color: #000;
 }
