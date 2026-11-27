@@ -51,7 +51,7 @@ type Props = {
     kind: Kind;
 };
 
-const RED = "#6a0ac9";
+const RED = "#872e7c";
 
 const STEPS = ["Details", "Location", "Date & Time", "Vehicle", "Review", "Payment"];
 const REVIEW_STEP = 4;

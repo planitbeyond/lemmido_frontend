@@ -6,7 +6,7 @@ import { KERALA_BOUNDS } from "../ride-form/kerala";
 
 // Advanced markers need a map ID; Google's test ID, like the booking form's map
 const MAP_ID = "DEMO_MAP_ID";
-const RED = "#6a0ac9";
+const RED = "#872e7c";
 
 type LatLng = { lat: number; lng: number };
 
@@ -28,7 +28,7 @@ type MapParts = {
 // The helper's marker: a red dot with a soft pulse
 function helperDot() {
     const dot = document.createElement("div");
-    dot.style.cssText = `width:18px;height:18px;border-radius:50%;background:${RED};border:3px solid #fff;box-shadow:0 0 0 6px rgba(106, 10, 201,0.25),0 2px 6px rgba(0,0,0,0.3);`;
+    dot.style.cssText = `width:18px;height:18px;border-radius:50%;background:${RED};border:3px solid #fff;box-shadow:0 0 0 6px rgba(135, 46, 124,0.25),0 2px 6px rgba(0,0,0,0.3);`;
     dot.title = "Your helper";
     return dot;
 }

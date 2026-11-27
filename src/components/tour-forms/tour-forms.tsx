@@ -287,7 +287,7 @@ function StaycationFields({ days }: { days: number }) {
 }
 
 // The booking wizard's red, for the calendar and the time chips
-const RED = "#6a0ac9";
+const RED = "#872e7c";
 
 // Pickup times offered for a custom trip, and when people may want to be back
 const PICKUP_TIMES = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];

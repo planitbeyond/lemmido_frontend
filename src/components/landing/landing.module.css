@@ -1,14 +1,14 @@
 /* Landing page. Mobile first (390px Figma frame), desktop layout from 960px. */
 
 .page {
-    --red: #6a0ac9;
-    --red-dark: #4b079e;
+    --red: #872e7c;
+    --red-dark: #65235d;
     --ink: #141414;
     --body: #555555;
     --muted: #777777;
     --placeholder: #888888;
-    --pink: #ece0fc;
-    --shade: #ece0fc;
+    --pink: #f3e4f1;
+    --shade: #f3e4f1;
     --line: #dddddd;
     --card-shadow: 0 6px 20px rgba(20, 20, 20, 0.08);
 
@@ -222,7 +222,7 @@
 }
 
 .accountButton:hover {
-    color: #d4b8f8;
+    color: #d9aed3;
 }
 
 .chevronUp {
@@ -679,7 +679,7 @@
     border-radius: 50%;
     background: var(--red);
     color: #fff;
-    box-shadow: 0 0 0 4px rgba(106, 10, 201, 0.1);
+    box-shadow: 0 0 0 4px rgba(135, 46, 124, 0.1);
 }
 
 /* Process */

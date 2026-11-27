@@ -167,7 +167,7 @@ export default function PlaceSearch({ label, value, onChange, active, onFocus, i
                               height: 46,
                               padding: "0 10px",
                               background: "#fff",
-                              border: `1px solid ${active ? "#6a0ac9" : "#ddd"}`,
+                              border: `1px solid ${active ? "#872e7c" : "#ddd"}`,
                               borderRadius: 12,
                           }
                         : { position: "relative" }
