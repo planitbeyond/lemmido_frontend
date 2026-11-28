@@ -167,21 +167,6 @@ const TABS: { id: Tab; label: string; Icon: (props: { size?: number }) => React.
     { id: "custom", label: "Custom trip", Icon: StarIcon },
 ];
 
-function Price({ offer }: { offer: Offer }) {
-    return (
-        <p className={styles.price}>
-            {offer.price === null ? (
-                <span className={styles.priceUnit}>Price on request</span>
-            ) : (
-                <>
-                    <strong>{rupees.format(offer.price / 100)}</strong>
-                    <span className={styles.priceUnit}>/{offer.priceUnit}</span>
-                </>
-            )}
-        </p>
-    );
-}
-
 function Meta({ offer }: { offer: Offer }) {
     return (
         <p className={styles.cardMeta}>
@@ -211,7 +196,6 @@ function OfferSummary({ offer, index }: { offer: Offer; index: number }) {
                 <h2 className={styles.h2}>{offer.title}</h2>
                 <p className={styles.summaryText}>{offer.summary}</p>
                 <Meta offer={offer}/>
-                <Price offer={offer}/>
             </div>
         </aside>
     );
@@ -233,7 +217,6 @@ function OfferCard({ offer, index, onBook }: { offer: Offer; index: number; onBo
                 <p className={styles.cardSummary}>{offer.summary}</p>
                 <Meta offer={offer}/>
                 <div className={styles.cardFooter}>
-                    <Price offer={offer}/>
                     <button type="button" className={styles.bookButton} onClick={onBook}>
                         Book Now <ArrowRight size={11}/>
                     </button>
@@ -304,7 +287,7 @@ function StaycationFields({ days }: { days: number }) {
 }
 
 // The booking wizard's red, for the calendar and the time chips
-const RED = "#e8193c";
+const RED = "#872e7c";
 
 // Pickup times offered for a custom trip, and when people may want to be back
 const PICKUP_TIMES = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
@@ -613,7 +596,6 @@ function PriceDetails({ offer, travellers, days, submitted }: PriceDetailsProps)
                             </dt>
                             <dd>{money(total)}</dd>
                         </div>
-                        <div><dt>Tax</dt><dd>----</dd></div>
                     </>
                 )}
             </dl>

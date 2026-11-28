@@ -40,12 +40,12 @@ const quickLinks = [
 ];
 
 const instagramPhotos = [
-    "/landing/hero-companion.jpg",
+    "/landing/service-tour-family.jpg",
     "/landing/service-tour.jpg",
-    "/landing/about-portrait.jpg",
+    "/landing/service-driver.jpg",
     "/landing/hero-tour.jpg",
     "/landing/cta-houseboat.jpg",
-    "/landing/review-main.jpg",
+    "/landing/about-tablet.jpg",
 ];
 
 export default function Page() {
@@ -58,7 +58,7 @@ export default function Page() {
                 <section className={`${styles.hero} ${styles.tinted}`}>
                     <div className={`${styles.container} ${styles.heroInner}`}>
                         <div className={styles.heroText}>
-                            <p className={styles.eyebrow}>Let me do it <span className={styles.red}>Lemmido</span></p>
+                            <p className={styles.eyebrow}><span className={styles.red}>Lemmido</span>, your friend in hometown!</p>
                             <h1 className={styles.heroTitle}>
                                 You’re Far Away.<br/>
                                 We’re <span className={styles.red}>Right There.</span>
@@ -74,13 +74,13 @@ export default function Page() {
                         </div>
                         <div className={styles.heroCollage}>
                             <div className={`${styles.collagePhoto} ${styles.collageCaregiver}`}>
-                                <Image src="/landing/hero-companion.jpg" alt="A smiling elderly woman in Kerala" fill sizes="(min-width: 960px) 160px, 45vw" priority/>
+                                <Image src="/landing/nri.jpg" alt="A young man abroad on a phone call, working on his laptop" fill sizes="(min-width: 960px) 160px, 45vw" priority/>
                             </div>
                             <div className={`${styles.collagePhoto} ${styles.collageDriver}`}>
-                                <Image src="/landing/driver-istock.jpg" alt="A smiling driver turning to greet his passenger" fill sizes="(min-width: 960px) 160px, 45vw" priority/>
+                                <Image src="/landing/driver.jpg" alt="A smiling driver at the wheel with his passenger behind him" fill sizes="(min-width: 960px) 160px, 45vw" priority/>
                             </div>
                             <div className={`${styles.collagePhoto} ${styles.collageTemple}`}>
-                                <Image src="/landing/hero-tour.jpg" alt="A country boat on the Kerala backwaters" fill sizes="(min-width: 960px) 160px, 45vw" priority/>
+                                <Image src="/landing/mom-nri.jpg" alt="A son home from abroad hugging his smiling mother in a Kerala garden" fill sizes="(min-width: 960px) 160px, 45vw" priority/>
                             </div>
                         </div>
                     </div>
@@ -107,7 +107,7 @@ export default function Page() {
                     <div className={`${styles.container} ${styles.about}`}>
                         <div className={styles.aboutPhotos}>
                             <div className={`${styles.oval} ${styles.ovalLarge}`}>
-                                <Image src="/landing/about-portrait.jpg" alt="An elderly woman seated in a chair at home" fill sizes="(min-width: 960px) 340px, 50vw"/>
+                                <Image src="/landing/mom-nri.jpg" alt="A son home from abroad hugging his smiling mother in a Kerala garden" fill sizes="(min-width: 960px) 340px, 50vw"/>
                             </div>
                             <div className={styles.aboutStack}>
                                 <div className={`${styles.oval} ${styles.ovalSmall}`}>
@@ -179,7 +179,7 @@ export default function Page() {
                                 </div>
                             </div>
                             <div className={styles.reviewPhoto}>
-                                <Image src="/landing/review-main.jpg" alt="An elderly man seated outside a shop" fill sizes="(min-width: 960px) 180px, 90vw"/>
+                                <Image src="/landing/service-companion.jpg" alt="An elderly couple out for a walk in Kerala" fill sizes="(min-width: 960px) 180px, 90vw"/>
                             </div>
                             <figure className={styles.reviewBody}>
                                 <div className={styles.stars} aria-label="5 out of 5 stars">★★★★★</div>

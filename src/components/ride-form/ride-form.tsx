@@ -12,7 +12,7 @@ import type { PickedLocation } from "./kerala";
 import PlaceSearch from "./place-search";
 import RideMap from "./ride-map";
 import { QuoteSubmitted, accountDetails, COUNTRY_CODES, EMPTY_DETAILS, PlaceIcon, Stepper, WHO_FOR, type Details, type WhoFor } from "./booking-shared";
-import { useTrip, type Quote, type VehicleSource } from "./use-trip";
+import { useTrip, type Quote, type Trip, type VehicleSource } from "./use-trip";
 import styles from "./booking-wizard.module.css";
 
 type Ride = {
@@ -51,7 +51,7 @@ type Props = {
     kind: Kind;
 };
 
-const RED = "#e8193c";
+const RED = "#872e7c";
 
 const STEPS = ["Details", "Location", "Date & Time", "Vehicle", "Review", "Payment"];
 const REVIEW_STEP = 4;
@@ -387,7 +387,7 @@ export default function RideForm({ kind }: Props) {
             <div className={styles.card}>
                 <div className={styles.top}>
                     <Image src="/booking/logo.svg" alt="Lemmido" width={86} height={17}/>
-                    <Link href="/" className={styles.close} aria-label="Close and go back home">
+                    <Link href="/#services" className={styles.close} aria-label="Close and go back to services">
                         <Image src="/booking/close.svg" alt="" width={24} height={24}/>
                     </Link>
                 </div>
@@ -830,6 +830,29 @@ function formatDuration(minutes: number) {
     return [h > 0 && `${h} hr${h === 1 ? "" : "s"}`, (m > 0 || h === 0) && `${m} min${m === 1 ? "" : "s"}`].filter(Boolean).join(" ");
 }
 
+// Whether the customer travels both ways: a driver round trip, or a companion, who
+// brings the customer home. Only a one-way driver drops them off and leaves.
+function isCustomerRoundTrip(kind: Kind, trip: Trip) {
+    return kind !== "driver" || trip.roundTrip;
+}
+
+// The customer's drives, leaving out the legs to and from our base (they still count
+// towards the 9 h limit and the price): pickup → destination, plus destination →
+// pickup on a round trip. A trip without a return leg (a companion's) takes the way
+// back to be as long as the way there.
+function customerLegs(kind: Kind, trip: Trip) {
+    const [there, back = there] = trip.legs.slice(1, -1);
+    return isCustomerRoundTrip(kind, trip) ? [there!, back!] : [there!];
+}
+
+function customerDriveMinutes(kind: Kind, trip: Trip) {
+    return customerLegs(kind, trip).reduce((sum, leg) => sum + leg.durationSeconds, 0) / 60;
+}
+
+function customerKm(kind: Kind, trip: Trip) {
+    return customerLegs(kind, trip).reduce((sum, leg) => sum + leg.distanceMeters, 0) / 1000;
+}
+
 // The trip's price, how it's made up, and the button that books it
 // overLimit: the job runs over 9 h or several days, which is why an admin prices it;
 // multiDay: it's the several days; requested: the quote request has been sent
@@ -858,22 +881,24 @@ function PriceDetails({ kind, state, saving, overLimit, multiDay, requested }: P
             {trip && quote && (
                 <>
                     <dl className={styles.priceRows}>
-                        <div><dt>Distance</dt><dd>{trip.distanceKm.toFixed(1)} km</dd></div>
-                        <div><dt>Duration</dt><dd>{formatDuration(trip.taskMinutes)}</dd></div>
+                        <div><dt>Distance</dt><dd>{customerKm(kind, trip).toFixed(1)} km</dd></div>
+                        <div>
+                            <dt>{isCustomerRoundTrip(kind, trip) ? "Round trip" : "One way"}</dt>
+                            <dd>{formatDuration(customerDriveMinutes(kind, trip))}</dd>
+                        </div>
+                        {showOnSite && (
+                            <div>
+                                <dt>{kind === "driver" ? "Waiting time" : "Service hours"}</dt>
+                                <dd>{formatDuration(trip.onSiteMinutes)}</dd>
+                            </div>
+                        )}
                         {quote.approvalMode === "auto" && (
                             <>
                                 <div>
-                                    <dt>
-                                        Vehicle
-                                        <small>
-                                            {quote.billedKm !== null
-                                                ? `${quote.billedKm} km at ${money(quote.travelAmount / quote.billedKm)}`
-                                                : `${quote.billedDriveHrs} h driving at ${money(quote.travelAmount / (quote.billedDriveHrs || 1))}`}
-                                        </small>
-                                    </dt>
+                                    {/* Just the amount: the billed km and driving hours include the legs to and from our base */}
+                                    <dt>Drive Charge</dt>
                                     <dd>{money(quote.travelAmount)}</dd>
                                 </div>
-                                <div><dt>Tax</dt><dd>----</dd></div>
                                 {showOnSite && (
                                     <div>
                                         <dt>
@@ -891,7 +916,7 @@ function PriceDetails({ kind, state, saving, overLimit, multiDay, requested }: P
                             {multiDay
                                 ? "The Lemmido team will share a quote with you, as the booking is for multiple days."
                                 : overLimit
-                                    ? "Admin approval is required for this service as it takes more than 9 hrs"
+                                    ? "Admin approval is required for this service as it is away from the base location"
                                     : "Admin approval is required for this service."}
                         </p>
                     ) : (

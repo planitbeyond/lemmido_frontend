@@ -1,12 +1,12 @@
 /* Customer dashboard. Colours from the landing page (landing.module.css). */
 
 .shell {
-    --red: #e8183c;
-    --red-dark: #c8102e;
+    --red: #872e7c;
+    --red-dark: #65235d;
     --ink: #141414;
     --body: #555555;
     --muted: #777777;
-    --pink: #fbe4e8;
+    --pink: #f3e4f1;
     --line: #e6e6e6;
     --card-shadow: 0 6px 20px rgba(20, 20, 20, 0.08);
 

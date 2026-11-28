@@ -16,7 +16,7 @@ type Props = {
     // The job needs an admin's approval, who also assigns the helper: offer every
     // time outside the notice period, without checking helpers
     anyTime?: boolean;
-    // With anyTime: the HH:MM times to offer instead of every half hour
+    // With anyTime: the HH:MM times to offer instead of every hour
     slotTimes?: string[];
     // A dropdown, or a grid of buttons (one radio per time)
     variant?: "select" | "chips";
@@ -29,8 +29,8 @@ const input = { padding: 8, border: "1px solid #ccc", borderRadius: 6, font: "in
 
 type Loaded = { key: string; times: string[] } | { key: string; error: true };
 
-// Every start time on the :00/:30 grid (R1): 00:00, 00:30 … 23:30
-const SLOT_TIMES = Array.from({ length: 48 }, (_, i) => `${String(Math.floor(i / 2)).padStart(2, "0")}:${i % 2 ? "30" : "00"}`);
+// Every pickup time, one hour apart: 00:00, 01:00 … 23:00
+const SLOT_TIMES = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
 
 // 14:30 as 02:30 PM
 function to12Hour(time: string) {

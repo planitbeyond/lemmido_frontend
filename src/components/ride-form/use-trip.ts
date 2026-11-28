@@ -35,6 +35,8 @@ export type Quote =
 // The job's trip from POST /bookings/trip: Base → From → To → Base, or on a
 // round trip Base → From → To → From → Base
 export type Trip = {
+    // Every driving leg in order; the first and last are to and from our base
+    legs: { distanceMeters: number; durationSeconds: number }[];
     distanceKm: number;
     driveMinutes: number;
     leaveBaseMinutes: number;

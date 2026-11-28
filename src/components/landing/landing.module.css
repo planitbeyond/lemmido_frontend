@@ -1,14 +1,14 @@
 /* Landing page. Mobile first (390px Figma frame), desktop layout from 960px. */
 
 .page {
-    --red: #e8183c;
-    --red-dark: #c8102e;
+    --red: #872e7c;
+    --red-dark: #65235d;
     --ink: #141414;
     --body: #555555;
     --muted: #777777;
     --placeholder: #888888;
-    --pink: #fbe4e8;
-    --shade: #f9e9eb;
+    --pink: #f3e4f1;
+    --shade: #f3e4f1;
     --line: #dddddd;
     --card-shadow: 0 6px 20px rgba(20, 20, 20, 0.08);
 
@@ -82,7 +82,7 @@
     padding: 56px 0;
 }
 
-/* Every other section after the hero: pink at the top, faded to white about 60% of the way down */
+/* The hero and every other section after it: a light purple band at the top, faded to white about 60% of the way down */
 .tinted {
     background: linear-gradient(180deg, var(--shade) 0%, #fff 60%);
 }
@@ -222,7 +222,7 @@
 }
 
 .accountButton:hover {
-    color: #ffb3c0;
+    color: #d9aed3;
 }
 
 .chevronUp {
@@ -632,7 +632,7 @@
 .servicePrice {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     margin: 10px 4px 0;
     font-size: 10.5px;
     font-weight: 500;
@@ -679,7 +679,7 @@
     border-radius: 50%;
     background: var(--red);
     color: #fff;
-    box-shadow: 0 0 0 4px rgba(232, 24, 60, 0.1);
+    box-shadow: 0 0 0 4px rgba(135, 46, 124, 0.1);
 }
 
 /* Process */
