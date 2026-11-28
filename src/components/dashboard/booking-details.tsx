@@ -5,6 +5,7 @@ import Link from "next/link";
 import { authClient } from "../../lib/auth-client";
 import { ArrowLeft, Phone, WhatsApp } from "../landing/icons";
 import { WHATSAPP_URL } from "../landing/site-header";
+import { PhoneIcon } from "./dashboard-icons";
 import TrackingMap from "./tracking-map";
 import styles from "./booking-details.module.css";
 
@@ -191,6 +192,51 @@ function mapStatus(b: Booking, hasHelper: boolean, liveFresh: boolean) {
     return "Waiting for confirmation";
 }
 
+// The booking forms put details that have no fields of their own into the
+// description as "Label: value" lines, ahead of the customer's own notes.
+// Pull those out so they show as rows; whatever's left is the notes.
+const DESCRIPTION_LABELS = ["Booking for", "Name", "Phone", "Pickup landmark", "Drop landmark", "Extras"] as const;
+type DescriptionField = (typeof DESCRIPTION_LABELS)[number];
+
+const WHO_FOR: Record<string, string> = { "My Self": "Yourself", "My Parents": "Your parents", "Someone Else": "Someone else" };
+
+function readDescription(description: string | null) {
+    const fields: Partial<Record<DescriptionField, string>> = {};
+    const notes: string[] = [];
+    for (const line of (description ?? "").split("\n")) {
+        const label = DESCRIPTION_LABELS.find((l) => line.startsWith(`${l}:`));
+        if (label) fields[label] = line.slice(label.length + 1).trim();
+        else if (line.trim()) notes.push(line);
+    }
+    // "Mary Joseph (Female)" → name and gender; "()" when neither was given
+    const nameMatch = fields.Name?.match(/^(.*?)\s*(?:\(([^)]*)\))?$/);
+    const name = nameMatch?.[1].trim() || null;
+    const gender = nameMatch?.[2]?.trim() || null;
+    // Only a country code means no number was given
+    const phone = fields.Phone && /\d{5,}/.test(fields.Phone.replace(/\s/g, "")) ? fields.Phone : null;
+    return {
+        whoFor: fields["Booking for"] ? WHO_FOR[fields["Booking for"]] ?? fields["Booking for"] : null,
+        name: name ? (gender ? `${name} (${gender})` : name) : null,
+        phone,
+        pickupLandmark: fields["Pickup landmark"] || null,
+        dropLandmark: fields["Drop landmark"] || null,
+        extras: fields.Extras || null,
+        notes: notes.join("\n"),
+    };
+}
+
+// The pill on the booking details card
+function approvalLabel(b: Booking) {
+    switch (b.approvalStatus) {
+        case "awaiting_payment": return "Payment due";
+        case "pending_approval": return "Awaiting approval";
+        case "quoted": return "Quote ready";
+        case "accepted": return "Quote accepted";
+        case "confirmed": return b.jobStatus === "completed" ? "Completed" : "Confirmed";
+        default: return CLOSED[b.approvalStatus] ? b.approvalStatus[0].toUpperCase() + b.approvalStatus.slice(1) : b.approvalStatus;
+    }
+}
+
 export default function BookingDetails({ bookingId }: { bookingId: string }) {
     const { data: session, isPending } = authClient.useSession();
     const loaded = useBookingDetails(bookingId, Boolean(session));
@@ -231,14 +277,32 @@ export default function BookingDetails({ bookingId }: { bookingId: string }) {
     else if (liveFresh && now !== null) liveLine = `Live location · updated ${ago(now - live!.timestamp)}`;
     else if (live && now !== null) liveLine = `Last seen ${ago(now - live.timestamp)}`;
     else liveLine = connected ? `Your ${role} will share their location when they set out.` : "Connecting to live tracking…";
+    // The staff card leaves out the waiting message; the map's bar still shows it
+    const waitingForLocation = Boolean(helper && tracking && !live);
+
+    const about = readDescription(b.description);
+    // Live: the job has started, or it's confirmed and we're inside its booked time
+    const happeningNow =
+        !closed &&
+        b.jobStatus !== "completed" &&
+        (b.jobStatus === "in_progress" ||
+            b.jobStatus === "running_over" ||
+            (b.approvalStatus === "confirmed" && now !== null && now >= Date.parse(b.dateTime) && now <= Date.parse(b.expectedEndAt ?? b.endsAt)));
 
     return (
         <div className={styles.page}>
-            <section className={styles.mapWrap} aria-label="Live map">
-                <TrackingMap pickup={b.pickup} destination={b.destination} helper={live} status={mapStatus(b, helper !== null, liveFresh)}/>
-            </section>
-
             <div className={styles.shell}>
+                <section className={styles.mapWrap} aria-label="Live map">
+                    <TrackingMap
+                        pickup={b.pickup}
+                        destination={b.destination}
+                        helper={live}
+                        status={mapStatus(b, helper !== null, liveFresh)}
+                        detail={liveLine}
+                        live={happeningNow}
+                    />
+                </section>
+
                 <Link href="/dashboard" className={styles.back}><ArrowLeft size={12}/> My dashboard</Link>
                 <div className={styles.titleRow}>
                     <div>
@@ -259,20 +323,23 @@ export default function BookingDetails({ bookingId }: { bookingId: string }) {
 
                 <div className={styles.grid}>
                     <div className={styles.stack}>
-                        <section className={styles.card} aria-labelledby="helper-heading">
+                        <section className={`${styles.card} ${styles.tinted}`} aria-labelledby="helper-heading">
                             <h2 id="helper-heading">Your {role}</h2>
-                            {helper ? (
+                            {helper && (
                                 <div className={styles.helper}>
                                     <span className={styles.avatar} aria-hidden="true">
                                         {(helper.name ?? "?").split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("")}
                                     </span>
                                     <div className={styles.helperText}>
                                         <strong>{helper.name ?? "Your helper"}</strong>
+                                        {helper.phoneNumber && <span>{helper.phoneNumber}</span>}
                                         <span className={styles.verified}>Verified Lemmido {role}</span>
-                                        <span className={liveFresh ? styles.liveOn : styles.muted}>
-                                            {liveFresh && <span className={styles.liveDot} aria-hidden="true"/>}
-                                            {liveLine}
-                                        </span>
+                                        {!waitingForLocation && (
+                                            <span className={liveFresh ? styles.liveOn : styles.muted}>
+                                                {liveFresh && <span className={styles.liveDot} aria-hidden="true"/>}
+                                                {liveLine}
+                                            </span>
+                                        )}
                                     </div>
                                     {helper.phoneNumber && (
                                         <a href={`tel:${helper.phoneNumber}`} className={styles.callButton} aria-label={`Call ${helper.name ?? "your helper"}`}>
@@ -280,17 +347,34 @@ export default function BookingDetails({ bookingId }: { bookingId: string }) {
                                         </a>
                                     )}
                                 </div>
-                            ) : (
-                                <p className={styles.muted}>{liveLine}</p>
+                            )}
+                            {!helper && !closed && (
+                                // A blurred stand-in for the helper until one is assigned
+                                <div className={`${styles.helper} ${styles.blurred}`} aria-hidden="true">
+                                    <span className={styles.avatar}>
+                                        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+                                    </span>
+                                    <div className={styles.helperText}>
+                                        <strong>Lemmido Helper</strong>
+                                        <span>+91 98765 43210</span>
+                                    </div>
+                                    <span className={styles.callButton}>
+                                        <Phone size={16}/>
+                                    </span>
+                                </div>
                             )}
                         </section>
 
-                        <section className={styles.card} aria-labelledby="status-heading">
-                            <h2 id="status-heading">Status</h2>
+                        <section className={`${styles.card} ${styles.tinted}`} aria-labelledby="status-heading">
+                            <h2 id="status-heading">Progress</h2>
                             <ol className={styles.timeline}>
                                 {steps.map((s) => (
                                     <li key={s.label} className={styles[s.state]}>
-                                        <span className={styles.dot} aria-hidden="true"/>
+                                        <span className={styles.dot} aria-hidden="true">
+                                            {s.state === "done" && (
+                                                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6.5 5 9l5-6" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                            )}
+                                        </span>
                                         <div>
                                             <strong>{s.label}</strong>
                                             {s.detail && <span>{s.detail}</span>}
@@ -302,34 +386,58 @@ export default function BookingDetails({ bookingId }: { bookingId: string }) {
                     </div>
 
                     <div className={styles.stack}>
-                        <section className={styles.card} aria-labelledby="details-heading">
-                            <h2 id="details-heading">Booking details</h2>
+                        {(about.name || about.whoFor) && (
+                            <section className={`${styles.card} ${styles.tinted}`} aria-labelledby="service-for-heading">
+                                <div>
+                                    <p className={styles.eyebrow}>Service for</p>
+                                    <h2 id="service-for-heading" className={styles.personName}>{about.name ?? "Not given"}</h2>
+                                    {about.whoFor && <p className={styles.subhead}>{about.whoFor}</p>}
+                                </div>
+                                {about.phone && (
+                                    <ul className={styles.contactList}>
+                                        <li>
+                                            <PhoneIcon size={18}/>
+                                            <a href={`tel:${about.phone.replace(/\s/g, "")}`}>{about.phone}</a>
+                                        </li>
+                                    </ul>
+                                )}
+                            </section>
+                        )}
+
+                        <section className={styles.darkCard} aria-labelledby="details-heading">
+                            <div className={styles.darkHead}>
+                                <h2 id="details-heading">Booking details</h2>
+                                <span className={styles.goldPill}>{approvalLabel(b)}</span>
+                            </div>
                             <dl className={styles.details}>
                                 <div><dt>Pickup</dt><dd>{b.pickup ?? "—"}</dd></div>
+                                {about.pickupLandmark && <div><dt>Pickup landmark</dt><dd>{about.pickupLandmark}</dd></div>}
                                 <div><dt>Destination</dt><dd>{b.destination}</dd></div>
+                                {about.dropLandmark && <div><dt>Drop landmark</dt><dd>{about.dropLandmark}</dd></div>}
                                 <div><dt>Date &amp; time</dt><dd>{formatWhen(b.dateTime)}</dd></div>
                                 <div><dt>Ends around</dt><dd>{formatWhen(b.expectedEndAt ?? b.endsAt)}</dd></div>
                                 {b.serviceHrs && Number(b.serviceHrs) > 0 && (
                                     <div><dt>{b.serviceType === "driver" ? "Waiting time" : "Service hours"}</dt><dd>{Number(b.serviceHrs)} h</dd></div>
                                 )}
                                 {b.companionPurpose && <div><dt>Where to</dt><dd>{PURPOSES[b.companionPurpose] ?? b.companionPurpose}</dd></div>}
+                                {about.extras && <div><dt>Extras</dt><dd>{about.extras}</dd></div>}
                                 <div><dt>Price</dt><dd>{b.quoteAmount !== null ? formatMoney(b.quoteAmount, b.currency) : "Quote to follow"}</dd></div>
-                                {b.payBy && b.paymentStatus !== "paid" && <div><dt>Pay by</dt><dd>{formatWhen(b.payBy)}</dd></div>}
+                                {b.payBy && b.paymentStatus !== "paid" && <div><dt>Pay by</dt><dd className={styles.warn}>{formatWhen(b.payBy)}</dd></div>}
                                 {b.overrunAmount !== null && b.overrunStatus !== "none" && (
                                     <div><dt>Extra time</dt><dd>{formatMoney(b.overrunAmount, b.currency)} ({b.overrunStatus})</dd></div>
                                 )}
                             </dl>
-                            {b.description && (
+                            {about.notes && (
                                 <div className={styles.notes}>
                                     <h3>Notes</h3>
-                                    <p>{b.description}</p>
+                                    <p>{about.notes}</p>
                                 </div>
                             )}
                         </section>
 
                         <section className={`${styles.card} ${styles.help}`}>
                             <h2>Need help with this booking?</h2>
-                            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={styles.btnLight}>
+                            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={styles.btnRed}>
                                 <WhatsApp size={16}/> WhatsApp Us
                             </a>
                         </section>

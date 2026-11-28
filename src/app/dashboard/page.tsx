@@ -1,16 +1,12 @@
 import Dashboard from "../../components/dashboard/dashboard";
-import SiteHeader from "../../components/landing/site-header";
-import styles from "../../components/landing/landing.module.css";
 
 export const metadata = { title: "My dashboard · Lemmido" };
 
+// The dashboard has its own sidebar and search bar instead of the site header
 export default function DashboardPage() {
     return (
-        <div className={styles.page}>
-            <SiteHeader/>
-            <main>
-                <Dashboard/>
-            </main>
-        </div>
+        <main>
+            <Dashboard/>
+        </main>
     );
 }

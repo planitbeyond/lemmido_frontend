@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { loadGoogleMaps } from "../../lib/google-maps";
 import { KERALA_BOUNDS } from "../ride-form/kerala";
+import styles from "./booking-details.module.css";
 
 // Advanced markers need a map ID; Google's test ID, like the booking form's map
 const MAP_ID = "DEMO_MAP_ID";
-const RED = "#872e7c";
+const PURPLE = "#872e7c";
 
 type LatLng = { lat: number; lng: number };
 
@@ -16,8 +17,11 @@ type Props = {
     destination: string;
     // The helper's live location, or null until one arrives
     helper: LatLng | null;
-    // Shown over the top-left of the map, e.g. "Helper is on the way"
+    // The bar along the bottom: e.g. "Your helper is on the way" / "Location updated 1 min ago"
     status: string;
+    detail: string;
+    // The booking is happening now: the map turns green
+    live: boolean;
 };
 
 type MapParts = {
@@ -25,16 +29,39 @@ type MapParts = {
     helperMarker: google.maps.marker.AdvancedMarkerElement;
 };
 
-// The helper's marker: a red dot with a soft pulse
+function marker(html: string, css: string, title: string) {
+    const el = document.createElement("div");
+    el.style.cssText = css;
+    el.innerHTML = html;
+    el.title = title;
+    return el;
+}
+
+// The helper: a yellow dot with a soft halo
 function helperDot() {
-    const dot = document.createElement("div");
-    dot.style.cssText = `width:18px;height:18px;border-radius:50%;background:${RED};border:3px solid #fff;box-shadow:0 0 0 6px rgba(135, 46, 124,0.25),0 2px 6px rgba(0,0,0,0.3);`;
-    dot.title = "Your helper";
-    return dot;
+    return marker("", "width:20px;height:20px;border-radius:50%;background:#ffd400;border:3px solid #fff;box-shadow:0 0 0 7px rgba(255,212,0,0.35),0 2px 6px rgba(0,0,0,0.25);", "Your helper");
+}
+
+// Pickup: a house
+function homePin() {
+    return marker(
+        '<svg width="22" height="22" viewBox="0 0 24 24" fill="#141414"><path d="M12 3 2 11.5h3V21h5.5v-6h3v6H19v-9.5h3z"/></svg>',
+        "display:grid;place-items:center;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.25));",
+        "Pickup",
+    );
+}
+
+// Destination: a black square with a white cross
+function destinationPin() {
+    return marker(
+        '<svg width="14" height="14" viewBox="0 0 14 14" fill="#fff"><path d="M5 0h4v5h5v4H9v5H5V9H0V5h5z"/></svg>',
+        "display:grid;place-items:center;width:24px;height:24px;border-radius:5px;background:#141414;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);",
+        "Destination",
+    );
 }
 
 // The route from pickup to destination, with the helper's live position on top
-export default function TrackingMap({ pickup, destination, helper, status }: Props) {
+export default function TrackingMap({ pickup, destination, helper, status, detail, live }: Props) {
     const mapRef = useRef<HTMLDivElement>(null);
     const partsRef = useRef<MapParts | null>(null);
     const [ready, setReady] = useState(false);
@@ -47,7 +74,7 @@ export default function TrackingMap({ pickup, destination, helper, status }: Pro
 
         async function init() {
             await loadGoogleMaps();
-            const [{ Map }, { AdvancedMarkerElement, PinElement }, { Geocoder }, { Route }] = await Promise.all([
+            const [{ Map }, { AdvancedMarkerElement }, { Geocoder }, { Route }] = await Promise.all([
                 google.maps.importLibrary("maps") as Promise<google.maps.MapsLibrary>,
                 google.maps.importLibrary("marker") as Promise<google.maps.MarkerLibrary>,
                 google.maps.importLibrary("geocoding") as Promise<google.maps.GeocodingLibrary>,
@@ -59,16 +86,15 @@ export default function TrackingMap({ pickup, destination, helper, status }: Pro
                 center: { lat: 9.38, lng: 76.57 },
                 zoom: 9,
                 mapId: MAP_ID,
-                streetViewControl: false,
-                mapTypeControl: false,
-                fullscreenControl: false,
+                disableDefaultUI: true,
+                zoomControl: true,
             });
             map.fitBounds(KERALA_BOUNDS, 0);
             const helperMarker = new AdvancedMarkerElement({ title: "Your helper", content: helperDot(), zIndex: 10 });
             partsRef.current = { map, helperMarker };
             setReady(true);
 
-            // Pins for both ends and the route between them
+            // Markers for both ends and the route between them
             const geocoder = new Geocoder();
             const locate = async (address: string | null) => {
                 if (!address) return null;
@@ -84,21 +110,30 @@ export default function TrackingMap({ pickup, destination, helper, status }: Pro
             if (cancelled) return;
             const bounds = new google.maps.LatLngBounds();
             if (from) {
-                new AdvancedMarkerElement({ map, position: from, title: "Pickup", content: new PinElement({ glyphText: "A", background: "#141414", borderColor: "#000", glyphColor: "#fff" }) });
+                new AdvancedMarkerElement({ map, position: from, title: "Pickup", content: homePin() });
                 bounds.extend(from);
             }
             if (to) {
-                new AdvancedMarkerElement({ map, position: to, title: "Destination", content: new PinElement({ glyphText: "B", background: RED, borderColor: "#a50e0e", glyphColor: "#fff" }) });
+                new AdvancedMarkerElement({ map, position: to, title: "Destination", content: destinationPin() });
                 bounds.extend(to);
             }
-            if (!bounds.isEmpty() && !framedRef.current) map.fitBounds(bounds, 56);
+            // Room at the bottom for the status bar
+            if (!bounds.isEmpty() && !framedRef.current) map.fitBounds(bounds, { top: 40, bottom: 100, left: 40, right: 40 });
             if (from && to) {
                 try {
                     const { routes } = await Route.computeRoutes({ origin: from, destination: to, travelMode: "DRIVING", fields: ["path"] });
                     if (cancelled) return;
-                    routes?.[0]?.createPolylines({ polylineOptions: { strokeColor: RED, strokeWeight: 4, strokeOpacity: 0.8 } }).forEach((line) => line.setMap(map));
+                    // A dashed purple line: the stroke is hidden and short dashes repeat along it
+                    routes?.[0]
+                        ?.createPolylines({
+                            polylineOptions: {
+                                strokeOpacity: 0,
+                                icons: [{ icon: { path: "M 0,-1 0,1", strokeColor: PURPLE, strokeOpacity: 1, strokeWeight: 3, scale: 3 }, offset: "0", repeat: "14px" }],
+                            },
+                        })
+                        .forEach((line) => line.setMap(map));
                 } catch {
-                    // The pins still show where the trip goes
+                    // The markers still show where the trip goes
                 }
             }
         }
@@ -121,29 +156,29 @@ export default function TrackingMap({ pickup, destination, helper, status }: Pro
         }
     }, [ready, helper]);
 
+    const trackLive = () => {
+        if (helper) partsRef.current?.map.moveCamera({ center: helper, zoom: 15 });
+    };
+
     return (
-        <div style={{ position: "relative", height: "100%" }}>
+        <div className={live ? `${styles.mapCard} ${styles.mapLive}` : styles.mapCard}>
             {error ? (
-                <p role="alert" style={{ padding: 20, color: "#b00020" }}>Map unavailable: {error}</p>
+                <p role="alert" className={styles.mapError}>Map unavailable: {error}</p>
             ) : (
-                <div ref={mapRef} style={{ position: "absolute", inset: 0 }}/>
+                <div ref={mapRef} className={styles.mapCanvas}/>
             )}
-            <span
-                style={{
-                    position: "absolute",
-                    top: 16,
-                    left: 16,
-                    padding: "8px 14px",
-                    borderRadius: 999,
-                    background: "#141414",
-                    color: "#fff",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                }}
-            >
-                {status}
-            </span>
+            <div className={styles.mapBar} role="status">
+                <div>
+                    <strong>
+                        {live && <span className={styles.mapLiveDot} aria-hidden="true"/>}
+                        {status}
+                    </strong>
+                    <span>{detail}</span>
+                </div>
+                {helper && (
+                    <button type="button" className={styles.btnRed} onClick={trackLive}>Track live</button>
+                )}
+            </div>
         </div>
     );
 }

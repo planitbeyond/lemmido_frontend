@@ -1,42 +1,41 @@
-/* One booking: live map on top, helper and status, then the details. Colours as the dashboard. */
+/* One booking: map on top, staff and progress, then the details. Colours and
+   sizes as the dashboard (dashboard.module.css). */
 
 .page {
     --red: #872e7c;
     --red-dark: #65235d;
-    --ink: #141414;
-    --body: #555555;
-    --muted: #777777;
-    --pink: #f3e4f1;
-    --line: #e6e6e6;
-    --card-shadow: 0 6px 20px rgba(20, 20, 20, 0.08);
+    --red-soft: #f3e4f1;
+    --tint: #faf4f9;
+    --tint-line: #ecdde9;
+    --ink: #1f1f1f;
+    --title: #2b2f44;
+    --body: #555a66;
+    --muted: #7b7f8a;
+    --line: #e7e8ec;
+    --card-shadow: 0 2px 10px rgba(43, 47, 68, 0.06);
 
     color: var(--ink);
 }
 
-.page :where(h1, h2, h3, p, ol, dl, dd) {
+.page :where(h1, h2, h3, p, ol, ul, dl, dd) {
     margin: 0;
     padding: 0;
 }
 
-.page :where(ol) {
+.page :where(ol, ul) {
     list-style: none;
-}
-
-.mapWrap {
-    height: 360px;
-    background: #eef0f2;
 }
 
 /* Lines up with the header's 1110px container */
 .shell {
-    width: min(1070px, 100% - 40px);
+    width: min(1070px, 100% - 32px);
     margin: 0 auto;
     padding: 24px 0 80px;
     color: var(--ink);
 }
 
 .muted {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--muted);
 }
 
@@ -50,6 +49,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    margin-top: 20px;
     font-size: 14px;
     font-weight: 600;
     color: var(--ink);
@@ -71,8 +71,9 @@
 
 .titleRow h1 {
     font-size: 28px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.2;
+    color: var(--title);
 }
 
 .titleRow .muted {
@@ -98,7 +99,7 @@
     margin-bottom: 20px;
     padding: 12px 16px;
     border-radius: 10px;
-    background: #f0f0f0;
+    background: #f0f1f3;
     font-size: 14px;
     color: var(--body);
 }
@@ -119,35 +120,171 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    padding: 20px;
-    border-radius: 16px;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
     background: #fff;
     box-shadow: var(--card-shadow);
 }
 
 .card h2 {
     font-size: 17px;
-    font-weight: 700;
+    font-weight: 600;
+    color: var(--title);
 }
 
-/* Helper */
+/* Soft pink cards, like the dashboard's staff and progress cards */
+.tinted {
+    border-color: var(--tint-line);
+    background: var(--tint);
+}
+
+/* Map Overview */
+
+.mapWrap {
+    height: 340px;
+}
+
+.mapCard {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #eceeef;
+    box-shadow: var(--card-shadow);
+}
+
+.mapCanvas {
+    position: absolute;
+    inset: 0;
+}
+
+/* A grey base map; the markers are DOM elements, so they keep their colour */
+.mapCanvas :global(canvas),
+.mapCanvas :global(.gm-style img) {
+    filter: grayscale(1) brightness(1.06) contrast(0.92);
+}
+
+.mapCard {
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* While the booking is happening: the map in its usual colours, with a green edge */
+.mapLive {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18), var(--card-shadow);
+}
+
+.mapLive .mapCanvas :global(canvas),
+.mapLive .mapCanvas :global(.gm-style img) {
+    filter: none;
+}
+
+.mapLiveDot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    vertical-align: middle;
+    animation: livePulse 1.6s ease-out infinite;
+}
+
+@keyframes livePulse {
+    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
+    100% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+}
+
+.mapError {
+    padding: 20px;
+    font-size: 14px;
+    color: #b00020;
+}
+
+.mapBar {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px 10px 16px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(20, 20, 20, 0.12);
+}
+
+.mapBar div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.mapBar strong {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.mapBar span {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.mapBar .btnRed {
+    flex: none;
+    height: 36px;
+    margin: 0;
+    padding: 0 18px;
+}
+
+/* Your staff */
+
+.subhead {
+    margin-top: 2px;
+    font-size: 14px;
+    color: var(--body);
+}
+
+.green {
+    color: #16a34a;
+}
+
+.amber {
+    color: #c27803;
+}
+
+.grey {
+    color: var(--muted);
+}
 
 .helper {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
+}
+
+.blurred {
+    filter: blur(5px);
+    opacity: 0.8;
+    pointer-events: none;
+    user-select: none;
 }
 
 .avatar {
     display: grid;
     flex: none;
     place-items: center;
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: var(--pink);
-    color: var(--red);
-    font-size: 18px;
+    background: var(--red-soft);
+    color: var(--red-dark);
+    font-size: 16px;
     font-weight: 700;
 }
 
@@ -155,26 +292,29 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
     min-width: 0;
-    font-size: 14px;
+    font-size: 13px;
+    color: var(--body);
 }
 
 .helperText strong {
-    font-size: 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
 }
 
 .verified {
     font-size: 12px;
     font-weight: 600;
-    color: #1d7a3e;
+    color: #16a34a;
 }
 
 .liveOn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--red);
 }
@@ -199,50 +339,110 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: var(--ink);
+    background: var(--red);
     color: #fff;
 }
 
 .callButton:hover {
-    background: var(--red);
+    background: var(--red-dark);
 }
 
-/* Status timeline */
+/* Service for */
+
+.eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.card h2.personName {
+    margin-top: 4px;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.contactList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.contactList li {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+    font-size: 14px;
+}
+
+.contactList svg {
+    justify-self: center;
+    color: var(--red);
+}
+
+.contactList li > span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-wrap: anywhere;
+}
+
+.contactList strong {
+    font-weight: 600;
+}
+
+.contactList small {
+    font-size: 13px;
+    color: var(--body);
+}
+
+.contactList a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.contactList a:hover {
+    color: var(--red);
+}
+
+/* Progress: purple ticks for done steps, joined by a dotted line */
 
 .timeline li {
     position: relative;
     display: flex;
     gap: 14px;
-    padding-bottom: 18px;
+    padding-bottom: 22px;
 }
 
 .timeline li:last-child {
     padding-bottom: 0;
 }
 
-/* The line down to the next step */
 .timeline li:not(:last-child)::before {
     content: "";
     position: absolute;
-    top: 16px;
-    bottom: 0;
-    left: 7px;
-    width: 2px;
-    background: var(--line);
+    top: 22px;
+    bottom: 2px;
+    left: 9px;
+    border-left: 2px dotted #c99bc3;
 }
 
-.timeline li.done:not(:last-child)::before {
-    background: var(--red);
+.timeline li.todo:not(:last-child)::before {
+    border-left-color: #d4d6db;
 }
 
 .dot {
     position: relative;
     z-index: 1;
+    display: grid;
     flex: none;
-    width: 16px;
-    height: 16px;
-    margin-top: 2px;
-    border: 2px solid #cfcfcf;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid #c9ccd2;
     border-radius: 50%;
     background: #fff;
 }
@@ -250,18 +450,26 @@
 .done .dot {
     border-color: var(--red);
     background: var(--red);
+    box-shadow: 0 0 0 3px var(--red-soft);
 }
 
+/* The step happening now: a black dot */
 .current .dot {
-    border-color: var(--red);
-    box-shadow: 0 0 0 4px rgba(135, 46, 124, 0.15);
+    border: 5px solid #fff;
+    background: #141414;
+    box-shadow: 0 0 0 1.5px #d4d6db;
 }
 
 .timeline div {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
+    padding-top: 1px;
     font-size: 14px;
+}
+
+.timeline strong {
+    font-weight: 600;
 }
 
 .todo strong {
@@ -274,7 +482,54 @@
     color: var(--muted);
 }
 
-/* Details */
+/* Booking details: the dark card, stacked on a second card behind it */
+
+.darkCard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 10px;
+    padding: 18px 20px 20px;
+    border-radius: 14px;
+    background: #0d0d0d;
+    color: #fff;
+}
+
+.darkCard::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    right: 22px;
+    left: 22px;
+    z-index: -1;
+    height: 24px;
+    border-radius: 12px 12px 0 0;
+    background: #5c5c5c;
+}
+
+.darkHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.darkCard h2 {
+    font-size: 19px;
+    font-weight: 500;
+}
+
+.goldPill {
+    flex: none;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: #5c4a10;
+    color: #fde68a;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
 
 .details {
     display: flex;
@@ -288,68 +543,82 @@
     grid-template-columns: 110px minmax(0, 1fr);
     gap: 12px;
     padding-bottom: 10px;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .details dt {
-    color: var(--muted);
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .details dd {
     font-weight: 500;
 }
 
+.details dd a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.details dd a:hover {
+    text-decoration: underline;
+}
+
+.details .warn {
+    color: #fb923c;
+}
+
 .notes h3 {
     margin-bottom: 6px;
     font-size: 14px;
+    font-weight: 600;
 }
 
 .notes p {
     font-size: 13px;
     line-height: 1.6;
-    color: var(--body);
+    color: rgba(255, 255, 255, 0.75);
     white-space: pre-wrap;
 }
 
 .help {
-    background: var(--ink);
-    color: #fff;
+    border-color: var(--tint-line);
+    background: var(--tint);
 }
 
 /* Buttons */
 
-.btnRed,
-.btnLight {
+.btnRed {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     align-self: flex-start;
-    height: 44px;
-    padding: 0 22px;
+    height: 40px;
+    margin-top: 12px;
+    padding: 0 20px;
     border: none;
     border-radius: 999px;
+    background: var(--red);
+    color: #fff;
     font: inherit;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     text-decoration: none;
+    white-space: nowrap;
     cursor: pointer;
 }
 
-.btnRed {
-    margin-top: 12px;
-    background: var(--red);
-    color: #fff;
+.btnRed:hover {
+    background: var(--red-dark);
 }
 
-.btnLight {
-    background: #fff;
-    color: var(--ink);
+.help .btnRed {
+    margin-top: 0;
 }
 
 @media (min-width: 960px) {
     .mapWrap {
-        height: 420px;
+        height: 400px;
     }
 
     .grid {

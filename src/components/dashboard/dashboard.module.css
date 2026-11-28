@@ -1,29 +1,54 @@
-/* Customer dashboard. Colours from the landing page (landing.module.css). */
+/* Customer dashboard: sidebar, search bar and cards. Purple from the landing page (landing.module.css). */
 
-.shell {
+.app,
+.loadingShell {
     --red: #872e7c;
     --red-dark: #65235d;
-    --ink: #141414;
-    --body: #555555;
-    --muted: #777777;
-    --pink: #f3e4f1;
-    --line: #e6e6e6;
-    --card-shadow: 0 6px 20px rgba(20, 20, 20, 0.08);
+    --red-soft: #f3e4f1;
+    --ink: #2b2f44;
+    --text: #1f1f1f;
+    --body: #555a66;
+    --muted: #7b7f8a;
+    --line: #e7e8ec;
+    --card-shadow: 0 2px 10px rgba(43, 47, 68, 0.06);
 
-    /* Lines up with the header: landing .container is 1110px with 20px padding */
-    width: min(1070px, 100% - 40px);
-    margin: 0 auto;
-    padding: 32px 0 80px;
-    color: var(--ink);
+    color: var(--text);
+    font-family: var(--font-inter), "Inter", system-ui, sans-serif;
+    background: #fff;
 }
 
-.shell :where(h1, h2, p, ul, dl, dd) {
+.app :where(h1, h2, h3, p, ul, dl, dd) {
     margin: 0;
     padding: 0;
 }
 
-.shell :where(ul) {
+.app :where(ul) {
     list-style: none;
+}
+
+.app {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    width: min(1110px, 100% - 32px);
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: 16px 0 56px;
+}
+
+.loadingShell {
+    width: min(1070px, 100% - 32px);
+    margin: 0 auto;
+    padding: 48px 0;
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
 }
 
 .muted {
@@ -31,297 +56,267 @@
     color: var(--muted);
 }
 
+.mutedInline {
+    color: var(--muted);
+    font-weight: 400;
+}
+
 .error {
     font-size: 14px;
     color: #b00020;
 }
 
-.eyebrow {
-    font-family: var(--font-script), "Dancing Script", cursive;
-    font-size: 18px;
+/* Sidebar: a bar along the top on phones, a rail down the side from tablet up */
+
+.sidebar {
+    position: sticky;
+    top: 8px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: var(--card-shadow);
+}
+
+.logo {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 40px;
+}
+
+.logo img {
+    width: 28px;
+    height: auto;
+}
+
+.navList {
+    display: flex;
+    flex: 1;
+    justify-content: space-around;
+    min-width: 0;
+}
+
+.navItem {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: 10px;
+    background: none;
+    color: var(--red);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.navItem:hover,
+.navItem:focus-visible {
+    background: var(--red-soft);
+}
+
+/* Main column */
+
+.main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.search {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 10px;
+    max-width: 640px;
+    height: 44px;
+    padding: 0 18px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: var(--card-shadow);
+    color: var(--muted);
+}
+
+.search:focus-within {
+    border-color: var(--red);
+}
+
+.search input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+}
+
+.search input::placeholder {
+    color: #9a9da6;
+}
+
+.bell {
+    position: relative;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-left: auto;
+    border: 1.5px solid var(--red);
+    border-radius: 50%;
     color: var(--red);
 }
 
-/* Greeting and quick bookings */
+.bellDot {
+    position: absolute;
+    top: 9px;
+    right: 11px;
+    width: 7px;
+    height: 7px;
+    border: 1.5px solid #fff;
+    border-radius: 50%;
+    background: var(--red);
+}
+
+/* Greeting */
 
 .greeting {
-    display: grid;
-    gap: 24px;
-    padding: 28px;
-    border-radius: 20px;
-    background: var(--pink);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
 }
 
 .greeting h1 {
-    margin-top: 2px;
-    font-size: 34px;
-    font-weight: 700;
-    line-height: 1.15;
-}
-
-.greeting .muted {
-    margin-top: 6px;
-    font-size: 15px;
-    color: var(--body);
-}
-
-.quick {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 14px;
-}
-
-.quickCard {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    height: 96px;
-    padding: 0 0 0 18px;
-    overflow: hidden;
-    border-radius: 14px;
-    background: #fff;
-    box-shadow: var(--card-shadow);
-    color: var(--ink);
-    text-decoration: none;
-    transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.quickCard:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 26px rgba(20, 20, 20, 0.12);
-}
-
-.quickCard strong {
-    display: block;
-    font-size: 16px;
-}
-
-.quickCard small {
-    display: block;
-    margin-top: 4px;
-    font-size: 12px;
-    color: var(--muted);
-}
-
-.quickImage {
-    position: relative;
-    flex: none;
-    width: 96px;
-    height: 100%;
-}
-
-.quickImage img {
-    object-fit: cover;
-}
-
-/* Trips and side column */
-
-.columns {
-    display: grid;
-    gap: 24px;
-    margin-top: 28px;
-}
-
-.trips {
-    min-width: 0;
-}
-
-.tripsHead {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.tripsHead h2 {
-    font-size: 22px;
-    font-weight: 700;
-}
-
-.tabs {
-    display: inline-flex;
-    padding: 4px;
-    border-radius: 999px;
-    background: #f1f1f1;
-}
-
-.tab,
-.tabOn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 999px;
-    background: none;
-    font: inherit;
-    font-size: 13px;
+    font-size: 24px;
     font-weight: 600;
-    cursor: pointer;
+    line-height: 1.2;
+    color: var(--ink);
 }
 
-.tab {
+.greeting p {
+    margin-top: 4px;
+    font-size: 13px;
     color: var(--body);
 }
 
-.tabOn {
-    background: var(--ink);
-    color: #fff;
+.bookMenu {
+    position: relative;
 }
 
-.tripList {
+.bookMenu summary {
+    list-style: none;
+}
+
+.bookMenu summary::-webkit-details-marker {
+    display: none;
+}
+
+.bookMenu ul {
+    position: absolute;
+    right: 0;
+    z-index: 10;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-}
-
-.trip {
-    display: grid;
-    grid-template-columns: 44px minmax(0, 1fr) auto;
-    gap: 14px;
-    align-items: start;
-    padding: 16px;
+    min-width: 180px;
+    margin-top: 6px;
+    padding: 6px;
     border: 1px solid var(--line);
     border-radius: 14px;
     background: #fff;
-    color: var(--ink);
+    box-shadow: 0 12px 30px rgba(43, 47, 68, 0.14);
+}
+
+.bookMenu a {
+    display: block;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
     text-decoration: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.trip:hover {
-    border-color: var(--red);
-    box-shadow: var(--card-shadow);
-}
-
-.tripIcon {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: var(--pink);
-    color: var(--red);
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.tripMain {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-}
-
-.tripTop {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-}
-
-.tripTop strong {
-    font-size: 15px;
-}
-
-.tripWhen {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--ink);
-}
-
-.tripRoute {
-    overflow: hidden;
-    font-size: 13px;
-    color: var(--body);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.tripNote {
-    font-size: 12px;
-    color: var(--muted);
-}
-
-.tripPrice {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
-    font-size: 15px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.tripPrice small {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--muted);
-}
-
-.pill {
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.red {
-    background: var(--pink);
+.bookMenu a:hover {
+    background: var(--red-soft);
     color: var(--red-dark);
 }
 
-.amber {
-    background: rgba(255, 216, 141, 0.45);
-    color: #a86f00;
-}
-
-.green {
-    background: #e3f5e9;
-    color: #1d7a3e;
-}
-
-.grey {
-    background: #f0f0f0;
-    color: var(--muted);
-}
-
-.empty {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 28px;
-    border: 1px dashed #d6d6d6;
-    border-radius: 14px;
-    color: var(--body);
-}
-
-.side {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
+/* Cards */
 
 .card {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 20px;
-    border-radius: 16px;
+    gap: 14px;
+    min-width: 0;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
     background: #fff;
     box-shadow: var(--card-shadow);
 }
 
-.card h2 {
-    font-size: 17px;
-    font-weight: 700;
+.cardHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
+
+.cardTitle {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.count {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.moreBtn {
+    align-self: center;
+    height: 34px;
+    padding: 0 18px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--red);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.moreBtn:hover {
+    border-color: var(--red);
+    background: var(--red-soft);
+}
+
+/* Profile and Service for */
 
 .profileTop {
     display: flex;
     align-items: center;
     gap: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
 }
 
 .avatar {
@@ -331,71 +326,328 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: var(--red);
-    color: #fff;
+    background: var(--red-soft);
+    color: var(--red-dark);
     font-size: 18px;
+    font-weight: 600;
+    object-fit: cover;
+}
+
+.profileName {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.profileName strong {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.profileName span {
+    overflow: hidden;
+    font-size: 13px;
+    color: var(--body);
+    text-overflow: ellipsis;
+}
+
+.contactList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.contactList li {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+    font-size: 14px;
+}
+
+.contactList svg {
+    justify-self: center;
+    margin-top: 0;
+    color: var(--red);
+}
+
+.contactList li > span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-wrap: anywhere;
+}
+
+.contactList strong {
+    font-weight: 500;
+}
+
+.contactList small {
+    font-size: 13px;
+    color: var(--body);
+}
+
+/* Upcoming: the next booking in full */
+
+.featured {
+    display: grid;
+    gap: 16px;
+}
+
+.featuredImage,
+.rowImage {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--red-soft);
+}
+
+.featuredImage {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    max-width: 200px;
+}
+
+.featuredImage img,
+.rowImage img {
+    object-fit: cover;
+}
+
+.featuredMain {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.featuredTitle,
+.rowTitle {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.featuredTitle {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px 24px;
+}
+
+.facts dt {
+    font-size: 12px;
+    color: var(--body);
+}
+
+.facts dd {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 2px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.facts small {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--body);
+}
+
+.helper {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px !important;
+}
+
+.helperAvatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.featuredSide {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+}
+
+.amountLabel {
+    font-size: 13px;
+    color: var(--body);
+}
+
+.amount {
+    font-size: 24px;
     font-weight: 700;
 }
 
-.details {
+.featuredActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+/* Booking rows: history, and the rest of the upcoming bookings */
+
+.rows {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    font-size: 14px;
 }
 
-.details div {
-    display: flex;
-    justify-content: space-between;
+.rows > li + li {
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+}
+
+.rows > li {
+    padding-bottom: 12px;
+}
+
+.featured + .rows {
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
     gap: 12px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--line);
+    align-items: center;
 }
 
-.details dt {
-    color: var(--muted);
+.rowImage {
+    width: 88px;
+    height: 66px;
 }
 
-.details dd {
-    overflow: hidden;
-    font-weight: 500;
-    text-overflow: ellipsis;
+.rowMain {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.rowTitle {
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.rowFor {
+    font-size: 13px;
+    color: var(--body);
+}
+
+.rowWhen {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--body);
+}
+
+.rowSide {
+    display: flex;
+    grid-column: 2;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.rowSide strong {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* Pills */
+
+.pill {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
     white-space: nowrap;
+    vertical-align: middle;
 }
 
-.helpCard {
-    background: var(--ink);
-    color: #fff;
+.red {
+    background: var(--red-soft);
+    color: var(--red-dark);
 }
 
-.helpCard p {
+.amber {
+    background: #fde68a;
+    color: #4a3b00;
+}
+
+.green {
+    background: #86efac;
+    color: #14532d;
+}
+
+.grey {
+    background: #e2e3e7;
+    color: #3d404b;
+}
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 20px;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.75);
+    border: 1px dashed #d6d7dc;
+    border-radius: 10px;
+    color: var(--body);
 }
 
 /* Buttons */
 
 .btnRed,
 .btnOutline,
-.btnDark {
+.btnSmall {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    height: 44px;
-    padding: 0 22px;
     border-radius: 999px;
     font: inherit;
-    font-size: 14px;
     font-weight: 600;
     text-decoration: none;
+    white-space: nowrap;
     cursor: pointer;
+    transition: background 0.15s, color 0.15s;
 }
 
 .btnRed {
+    height: 40px;
+    padding: 0 20px;
     border: none;
     background: var(--red);
     color: #fff;
+    font-size: 13px;
 }
 
 .btnRed:hover {
@@ -403,20 +655,29 @@
 }
 
 .btnOutline {
-    border: 1px solid #c5c5c5;
+    height: 40px;
+    padding: 0 18px;
+    border: 1.5px solid var(--red);
     background: #fff;
-    color: var(--ink);
+    color: var(--red);
+    font-size: 13px;
 }
 
 .btnOutline:hover {
-    border-color: var(--ink);
+    background: var(--red-soft);
 }
 
-.btnDark {
-    align-self: flex-start;
-    border: none;
+.btnSmall {
+    height: 28px;
+    padding: 0 12px;
+    border: 1px solid var(--red);
     background: #fff;
-    color: var(--ink);
+    color: var(--red);
+    font-size: 12px;
+}
+
+.btnSmall:hover {
+    background: var(--red-soft);
 }
 
 .signedOut {
@@ -426,42 +687,104 @@
     gap: 14px;
     max-width: 520px;
     padding: 40px;
-    border-radius: 20px;
-    background: var(--pink);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
 }
 
 .signedOut h1 {
+    margin: 0;
     font-size: 28px;
+    font-weight: 600;
+    color: var(--ink);
 }
 
 .signedOut p {
+    margin: 0;
     color: var(--body);
 }
 
-@media (min-width: 960px) {
-    .greeting {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-        align-items: center;
-        padding: 36px;
+/* Tablet up: side rail, rows with the price on the right */
+
+@media (min-width: 720px) {
+    .app {
+        grid-template-columns: 64px minmax(0, 1fr);
+        gap: 20px;
+        padding-top: 24px;
+    }
+
+    .sidebar {
+        top: 24px;
+        flex-direction: column;
+        align-self: start;
+        gap: 0;
+        height: calc(100vh - 48px);
+        max-height: 760px;
+        padding: 16px 0 20px;
+    }
+
+    .logo {
+        width: 44px;
+        margin-bottom: 28px;
+    }
+
+    .logo img {
+        width: 34px;
+    }
+
+    .navList {
+        flex: 1;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+
+    .navItem {
+        width: 40px;
+        height: 40px;
     }
 
     .greeting h1 {
-        font-size: 40px;
+        font-size: 28px;
     }
 
-    .columns {
-        grid-template-columns: minmax(0, 1fr) 340px;
-        align-items: start;
+    .row {
+        grid-template-columns: 104px minmax(0, 1fr) auto;
+    }
+
+    .rowImage {
+        width: 104px;
+        height: 72px;
+    }
+
+    .rowSide {
+        grid-column: auto;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+
+    .featured {
+        grid-template-columns: 140px minmax(0, 1fr);
+    }
+
+    .featuredSide {
+        grid-column: 1 / -1;
     }
 }
 
-@media (max-width: 560px) {
-    .trip {
-        grid-template-columns: 40px minmax(0, 1fr);
+@media (min-width: 1100px) {
+    .featured {
+        grid-template-columns: 140px minmax(0, 1fr) 280px;
+        align-items: start;
     }
 
-    .tripPrice {
-        grid-column: 2;
-        align-items: flex-start;
+    .featuredSide {
+        grid-column: auto;
+        align-self: stretch;
+        padding: 2px 0 0 24px;
+        border-top: none;
+        border-left: 1px solid var(--line);
     }
+
 }
